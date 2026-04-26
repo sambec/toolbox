@@ -107,6 +107,7 @@ nav a:hover { color: var(--clr-ink); border-color: var(--clr-accent); }
   flex-wrap: wrap;
 }
 .tool-menu-btn {
+  appearance: none;
   border: 1.5px solid var(--clr-border);
   background: var(--clr-surface);
   color: var(--clr-muted);
@@ -627,26 +628,21 @@ footer strong { color: #fff; }
 
 /* ── Responsive ──────────────────────────────── */
 @media (max-width: 640px) {
-  .header-inner {
-    height: auto;
-    min-height: 64px;
-    padding: .85rem 1rem;
-    align-items: flex-start;
-    flex-direction: column;
-    gap: .75rem;
-  }
-  nav {
-    width: 100%;
-    gap: .55rem .9rem;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  nav a {
-    font-size: .78rem;
-    padding: .15rem 0;
-  }
   .hero { padding: 3rem 1rem 2.5rem; }
   .tool-menu-section { padding: 1rem 1rem 0; }
+  .tool-menu {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .65rem;
+  }
+  .tool-menu-btn {
+    width: 100%;
+    min-height: 42px;
+    border-radius: 14px;
+    padding: .7rem .75rem;
+    font-size: .8rem;
+    text-align: center;
+  }
   .tools-section { padding: 2.5rem 1rem; }
   .tools-grid { grid-template-columns: 1fr; }
   .tool-card {
@@ -657,12 +653,22 @@ footer strong { color: #fff; }
     font-size: .62rem;
     padding: .18rem .5rem;
     letter-spacing: .04em;
+    white-space: normal;
   }
   .options-grid { grid-template-columns: 1fr; }
   .modal { border-radius: 12px 12px 0 0; }
   .modal-overlay { align-items: flex-end; padding: 0; }
   .modal-header, .modal-body { padding: 1.25rem 1rem; }
   .modal-actions { flex-direction: column-reverse; }
+}
+
+@media (max-width: 420px) {
+  .tool-menu {
+    grid-template-columns: 1fr;
+  }
+  .tool-tag {
+    font-size: .6rem;
+  }
 }
 
 /* ── Animations ──────────────────────────────── */
