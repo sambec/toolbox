@@ -530,7 +530,6 @@
 
     <div class="tool-card sign" onclick="openPanel('sign')">
       <div class="tool-icon">✍️</div>
-      <span class="tool-tag">Éditer</span>
       <h3>Signer</h3>
       <p>Dessiner ou saisir une signature et l'insérer dans le document.</p>
       <span class="tool-arrow">→</span>
@@ -538,7 +537,6 @@
 
     <div class="tool-card annotate" onclick="openPanel('annotate')">
       <div class="tool-icon">🖊️</div>
-
       <h3>Annoter &amp; Surligner</h3>
       <p>Écrire du texte, dessiner à main levée ou surligner des passages.</p>
       <span class="tool-arrow">→</span>
@@ -546,7 +544,6 @@
 
     <div class="tool-card rotate" onclick="openPanel('rotate')">
       <div class="tool-icon">🔄</div>
-
       <h3>Pivoter</h3>
       <p>Faire pivoter les pages d'un PDF de 90°, 180° ou 270°.</p>
       <span class="tool-arrow">→</span>
@@ -554,7 +551,6 @@
 
     <div class="tool-card watermark" onclick="openPanel('watermark')">
       <div class="tool-icon">💧</div>
-
       <h3>Filigrane</h3>
       <p>Ajouter un filigrane texte personnalisé sur toutes les pages.</p>
       <span class="tool-arrow">→</span>
@@ -562,7 +558,6 @@
 
     <div class="tool-card compress" onclick="openPanel('compress')">
       <div class="tool-icon">📦</div>
-
       <h3>Compresser</h3>
       <p>Réduire la taille du fichier en supprimant les métadonnées inutiles.</p>
       <span class="tool-arrow">→</span>
@@ -570,7 +565,6 @@
 
     <div class="tool-card resize" onclick="openPanel('resize')">
       <div class="tool-icon">📐</div>
-
       <h3>Redimensionner</h3>
       <p>Changez le format des pages : A4, Letter, A3 ou dimensions personnalisées.</p>
       <span class="tool-arrow">→</span>
@@ -651,6 +645,7 @@
       <div class="sign-tabs">
         <div class="sign-tab active" onclick="setSignTab('draw',this)">✏️ Dessin</div>
         <div class="sign-tab" onclick="setSignTab('type',this)">Aa Texte</div>
+          <div class="sign-tab" onclick="setSignTab('upload',this)">📷 Image</div>
       </div>
       <div id="sign-draw-tab">
         <div id="sign-canvas-wrap">
@@ -675,6 +670,19 @@
         </div>
         <div id="sig-text-preview" style="margin-top:.75rem;font-size:2rem;min-height:56px;color:var(--clr-ink);font-family:'Dancing Script',cursive;padding:6px 0;"></div>
         <button class="pdf-btn pdf-btn-primary" onclick="confirmTextSignature()" style="margin-top:.75rem;padding:.5rem 1.1rem;font-size:.85rem">Utiliser →</button>
+      </div>
+            <div id="sign-upload-tab" style="display:none">
+              <input type="file" id="sig-upload-input" accept="image/png, image/jpeg">
+              
+              <div style="margin-top:.75rem">
+                <img id="sig-upload-preview" style="max-width:100%; max-height:120px; display:none; border:1px solid #ccc; padding:4px;">
+              </div>
+
+              <button class="pdf-btn pdf-btn-primary"
+                      onclick="confirmUploadSignature()"
+                      style="margin-top:.75rem;padding:.5rem 1.1rem;font-size:.85rem">
+                Utiliser →
+              </button>
       </div>
       <div id="sign-pdf-section" style="display:none;margin-top:1.25rem">
         <p style="font-size:.83rem;color:var(--clr-muted);margin-bottom:.6rem">Cliquer sur la page pour placer la signature. Glisser pour déplacer.</p>
@@ -1195,9 +1203,12 @@ function setSigColor(c,el) {
 }
 function setSigThickness(v){ sigThickness=+v; if(sigCtx) sigCtx.lineWidth=v; }
 function setSignTab(tab,btn){
-  document.querySelectorAll('.sign-tab').forEach(t=>t.classList.remove('active')); btn.classList.add('active');
-  document.getElementById('sign-draw-tab').style.display=tab==='draw'?'block':'none';
-  document.getElementById('sign-type-tab').style.display=tab==='type'?'block':'none';
+  document.querySelectorAll('.sign-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+
+  document.getElementById('sign-draw-tab').style.display = tab==='draw' ? 'block' : 'none';
+  document.getElementById('sign-type-tab').style.display = tab==='type' ? 'block' : 'none';
+  document.getElementById('sign-upload-tab').style.display = tab==='upload' ? 'block' : 'none';
 }
 function setSigFont(f,btn){
   sigFont=f; document.getElementById('sig-text-preview').style.fontFamily=f+',cursive';
@@ -1406,6 +1417,27 @@ document.getElementById('annot-draw-canvas').addEventListener('pointerdown', e =
     annotCurrentPath = { x0: x, y0: y, x1: x, y1: y, color: annotHighlightColor };
   }
 });
+
+document.getElementById('sig-upload-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (!file.type.match('image/png') && !file.type.match('image/jpeg')) {
+    setStatus('sign', 'Format non supporté (PNG ou JPG uniquement)', 'error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const preview = document.getElementById('sig-upload-preview');
+    preview.src = evt.target.result;
+    preview.style.display = 'block';
+
+    // store temp
+    state.sign.uploadedImage = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+});
 document.getElementById('annot-draw-canvas').addEventListener('pointermove', e => {
   if (!annotIsDrawing) return;
   const [x, y] = getAnnotXY(e);
@@ -1485,6 +1517,35 @@ function eraseAt(x, y) {
     !d.points.some(p => Math.hypot(p.x - x, p.y - y) < R)
   );
   replayAnnotations(state.annotate.currentPage);
+}
+function confirmUploadSignature() {
+  if (!state.sign.uploadedImage) {
+    setStatus('sign', 'Importer une image d\'abord', 'error');
+    return;
+  }
+
+  state.sign.sigDataURL = state.sign.uploadedImage;
+
+  document.getElementById('sign-pdf-section').style.display = 'block';
+
+  setStatus('sign', 'Signature image prête ! Cliquez pour la placer.');
+}
+function resizeImage(dataUrl, maxWidth = 300) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const scale = Math.min(maxWidth / img.width, 1);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.src = dataUrl;
+  });
 }
 function annotUndo() {
   const pageData = getAnnotPage(state.annotate.currentPage);
