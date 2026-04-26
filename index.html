@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>📝 We love PDF</title>
   <meta name="description" content="Fusionnez, découpez, signez, annotez et surlignez vos PDF directement dans le navigateur. Aucun fichier transmis à un serveur." />
+  <link rel="stylesheet" href="common.css" />
   <link rel="stylesheet" href="style.css" />
   <!-- pdf-lib -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
@@ -97,6 +98,7 @@
       border-radius: 4px;
     }
     .file-thumb canvas { width: 100%; height: 100%; object-fit: cover; }
+    .file-thumb img { width: 100%; height: 100%; object-fit: cover; }
     .file-info { flex: 1; min-width: 0; }
     .file-info .fname { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .file-info .fmeta { color: var(--clr-muted); font-size: .75rem; margin-top: 2px; }
@@ -173,6 +175,9 @@
     }
     .page-thumb:hover { transform: scale(1.04); }
     .page-thumb.selected { border-color: var(--clr-accent); }
+    .page-thumb.sortable-thumb { cursor: grab; }
+    .page-thumb.sortable-thumb:active { cursor: grabbing; }
+    .page-thumb.drag-over { border-color: var(--clr-accent2); transform: scale(1.04); }
     .page-thumb canvas { width: 100%; display: block; }
     .page-num {
       text-align: center;
@@ -188,6 +193,7 @@
       font-weight: 700;
     }
     .page-thumb.selected .page-sel-badge { display: flex; }
+    .page-order-badge { display: flex; background: rgba(26,26,46,.84); }
 
     /* ── Options découpe ────────────────────────────────────── */
     .split-opts { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .75rem; }
@@ -479,12 +485,13 @@
       <div class="logo-icon">♥</div>
       We <span class="love">love</span>&nbsp;PDF
     </a>
-    <!-- <nav>
-      <a href="index.html#organiser">Organiser</a>
-      <a href="index.html#convertir">Convertir</a>
-      <a href="index.html#securiser">Sécuriser</a>
-      <a href="index.html#editer">Éditer</a>
-    </nav> -->
+    <nav>
+      <a href="main.html">Accueil</a>
+      <a href="counters.html">Compteurs</a>
+      <a href="markdown-studio.html">Markdown</a>
+      <a href="image-lab.html">Images</a>
+      <a href="#tools-grid">PDF</a>
+    </nav>
   </div>
 </header>
 
@@ -492,12 +499,25 @@
 <section class="hero">
   <div class="hero-badge">⚡ 100 % dans votre navigateur — aucun upload serveur</div>
   <h1>Outils PDF<br><em>avancés & gratuits</em></h1>
-  <p class="hero-sub">Fusionnez, découpez, signez, annotez, surlignez, pivotez, filigranez et compressez vos PDF. Tout se passe localement.</p>
+  <p class="hero-sub">Fusionnez, decoupez, convertissez en images, signez, annotez, pivotez, filigranez et compressez vos PDF. Tout se passe localement, en JavaScript, dans le navigateur.</p>
   <div class="hero-cta">
     <button class="btn-primary" onclick="document.getElementById('tools-grid').scrollIntoView({behavior:'smooth'})">
       Choisir un outil ↓
     </button>
     <!-- <a href="index.html" class="btn-secondary">← Tous les outils</a> -->
+  </div>
+</section>
+
+<section class="tool-menu-section" id="menu-outils">
+  <div class="tool-menu-inner">
+    <p class="section-label">Explorer par categorie</p>
+    <div class="tool-menu">
+      <button class="tool-menu-btn active" type="button" onclick="filterTools('all', this)">Tous</button>
+      <button class="tool-menu-btn" type="button" onclick="filterTools('organize', this)">Organiser</button>
+      <button class="tool-menu-btn" type="button" onclick="filterTools('convert', this)">Convertir</button>
+      <button class="tool-menu-btn" type="button" onclick="filterTools('edit', this)">Editer</button>
+      <button class="tool-menu-btn" type="button" onclick="filterTools('optimize', this)">Optimiser</button>
+    </div>
   </div>
 </section>
 
@@ -512,59 +532,89 @@
   <!-- Grille des outils -->
   <div class="tools-grid" id="tools-grid">
 
-    <div class="tool-card merge" onclick="openPanel('merge')">
+    <div class="tool-card merge cat-organize" data-category="organize" onclick="openPanel('merge')">
       <div class="tool-icon">🔗</div>
- 
+      <span class="tool-tag">Organiser</span>
       <h3>Fusionner</h3>
       <p>Combiner plusieurs PDF en un seul, dans l'ordre souhaité.</p>
       <span class="tool-arrow">→</span>
     </div>
 
-    <div class="tool-card split" onclick="openPanel('split')">
+    <div class="tool-card split cat-organize" data-category="organize" onclick="openPanel('split')">
       <div class="tool-icon">✂️</div>
-
+      <span class="tool-tag">Organiser</span>
       <h3>Découper</h3>
       <p>Extraire des pages ou diviser un PDF en plusieurs fichiers.</p>
       <span class="tool-arrow">→</span>
     </div>
 
-    <div class="tool-card sign" onclick="openPanel('sign')">
+    <div class="tool-card pages cat-organize cat-new" data-category="organize" onclick="openPanel('pages')">
+      <div class="tool-icon">🗂️</div>
+      <span class="tool-tag">Organiser</span>
+      <h3>Organiser les pages</h3>
+      <p>Supprimer des pages et les reordonner visuellement avant export.</p>
+      <span class="tool-arrow">→</span>
+    </div>
+
+    <div class="tool-card convert cat-convert cat-new" data-category="convert" onclick="openPanel('convert')">
+      <div class="tool-icon">🖼️</div>
+      <span class="tool-tag">Convertir</span>
+      <h3>PDF vers images</h3>
+      <p>Exporter chaque page en PNG ou JPG, localement, sans serveur.</p>
+      <span class="tool-arrow">→</span>
+    </div>
+
+    <div class="tool-card imagepdf cat-convert cat-new" data-category="convert" onclick="openPanel('imagepdf')">
+      <div class="tool-icon">📰</div>
+      <span class="tool-tag">Convertir</span>
+      <h3>Images vers PDF</h3>
+      <p>Assembler plusieurs PNG ou JPG en un PDF dans l'ordre souhaite.</p>
+      <span class="tool-arrow">→</span>
+    </div>
+
+    <div class="tool-card sign cat-edit" data-category="edit" onclick="openPanel('sign')">
       <div class="tool-icon">✍️</div>
+      <span class="tool-tag">Editer</span>
       <h3>Signer</h3>
       <p>Dessiner ou saisir une signature et l'insérer dans le document.</p>
       <span class="tool-arrow">→</span>
     </div>
 
-    <div class="tool-card annotate" onclick="openPanel('annotate')">
+    <div class="tool-card annotate cat-edit" data-category="edit" onclick="openPanel('annotate')">
       <div class="tool-icon">🖊️</div>
+      <span class="tool-tag">Editer</span>
       <h3>Annoter &amp; Surligner</h3>
       <p>Écrire du texte, dessiner à main levée ou surligner des passages.</p>
       <span class="tool-arrow">→</span>
     </div>
 
-    <div class="tool-card rotate" onclick="openPanel('rotate')">
+    <div class="tool-card rotate cat-edit" data-category="edit" onclick="openPanel('rotate')">
       <div class="tool-icon">🔄</div>
+      <span class="tool-tag">Editer</span>
       <h3>Pivoter</h3>
       <p>Faire pivoter les pages d'un PDF de 90°, 180° ou 270°.</p>
       <span class="tool-arrow">→</span>
     </div>
 
-    <div class="tool-card watermark" onclick="openPanel('watermark')">
+    <div class="tool-card watermark cat-edit" data-category="edit" onclick="openPanel('watermark')">
       <div class="tool-icon">💧</div>
+      <span class="tool-tag">Editer</span>
       <h3>Filigrane</h3>
       <p>Ajouter un filigrane texte personnalisé sur toutes les pages.</p>
       <span class="tool-arrow">→</span>
     </div>
 
-    <div class="tool-card compress" onclick="openPanel('compress')">
+    <div class="tool-card compress cat-optimize" data-category="optimize" onclick="openPanel('compress')">
       <div class="tool-icon">📦</div>
+      <span class="tool-tag">Optimiser</span>
       <h3>Compresser</h3>
       <p>Réduire la taille du fichier en supprimant les métadonnées inutiles.</p>
       <span class="tool-arrow">→</span>
     </div>
 
-    <div class="tool-card resize" onclick="openPanel('resize')">
+    <div class="tool-card resize cat-edit" data-category="edit" onclick="openPanel('resize')">
       <div class="tool-icon">📐</div>
+      <span class="tool-tag">Editer</span>
       <h3>Redimensionner</h3>
       <p>Changez le format des pages : A4, Letter, A3 ou dimensions personnalisées.</p>
       <span class="tool-arrow">→</span>
@@ -626,6 +676,134 @@
     </div>
     <div class="pdf-progress-wrap" id="split-progress"><div class="pdf-progress-bar" id="split-bar"></div></div>
     <div class="pdf-status" id="split-status"></div>
+  </div>
+
+  <!-- ═══════════ PANNEAU ORGANISER LES PAGES ═══════════ -->
+  <div class="tool-panel" id="panel-pages">
+    <div class="panel-header">
+      <span style="font-size:1.5rem">🗂️</span>
+      <h2>Supprimer et reordonner des pages</h2>
+      <button class="panel-close" onclick="closePanel('pages')">✕ Fermer</button>
+    </div>
+    <div class="pdf-drop-zone" id="pages-drop" onclick="document.getElementById('pages-input').click()">
+      <div class="pdf-drop-zone-icon">📑</div>
+      <h3>Deposer un PDF ici</h3>
+      <p>selectionner les pages a supprimer puis glisser pour reordonner</p>
+      <input type="file" id="pages-input" accept=".pdf">
+    </div>
+    <div id="pages-config" style="display:none;margin-top:1rem">
+      <p style="font-size:.88rem;color:var(--clr-muted);margin-bottom:.75rem">Cliquer pour selectionner des pages, puis glisser-deposer pour changer leur ordre.</p>
+      <div class="page-grid sortable-grid" id="pages-grid"></div>
+    </div>
+    <div class="pdf-controls" id="pages-controls" style="display:none">
+      <button class="pdf-btn pdf-btn-secondary" onclick="clearPageSelection()">Desselectionner</button>
+      <button class="pdf-btn pdf-btn-secondary" onclick="deleteSelectedPages()">Supprimer la selection</button>
+      <button class="pdf-btn pdf-btn-primary" onclick="downloadOrganizedPages()">⬇ Télécharger le PDF reorganise</button>
+      <button class="pdf-btn pdf-btn-secondary" onclick="clearFiles('pages')">Effacer</button>
+    </div>
+    <div class="pdf-progress-wrap" id="pages-progress"><div class="pdf-progress-bar" id="pages-bar"></div></div>
+    <div class="pdf-status" id="pages-status"></div>
+  </div>
+
+  <!-- ═══════════ PANNEAU CONVERTIR ═══════════ -->
+  <div class="tool-panel" id="panel-convert">
+    <div class="panel-header">
+      <span style="font-size:1.5rem">🖼️</span>
+      <h2>Convertir un PDF en images</h2>
+      <button class="panel-close" onclick="closePanel('convert')">✕ Fermer</button>
+    </div>
+    <div class="pdf-drop-zone" id="convert-drop" onclick="document.getElementById('convert-input').click()">
+      <div class="pdf-drop-zone-icon">📸</div>
+      <h3>Deposer un PDF ici</h3>
+      <p>export PNG ou JPG, page par page, 100 % local</p>
+      <input type="file" id="convert-input" accept=".pdf">
+    </div>
+    <div id="convert-config" style="display:none;margin-top:1.25rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="option-group">
+          <label>Format image</label>
+          <select id="convert-format" onchange="toggleConvertQuality()">
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <label>Definition</label>
+          <select id="convert-scale">
+            <option value="1.5">Legere</option>
+            <option value="2" selected>Standard</option>
+            <option value="3">Haute</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <label>Pages</label>
+          <select id="convert-pages" onchange="toggleConvertPages()">
+            <option value="all">Toutes les pages</option>
+            <option value="custom">Pages specifiques…</option>
+          </select>
+        </div>
+        <div class="option-group" id="convert-quality-wrap" style="display:none">
+          <label>Qualite JPG</label>
+          <input type="range" id="convert-quality" min="60" max="100" value="88" oninput="document.getElementById('convert-quality-label').textContent=this.value+'%'">
+          <div class="split-hint" id="convert-quality-label">88%</div>
+        </div>
+        <div class="option-group full-width" id="convert-pages-wrap" style="display:none">
+          <label>Pages a exporter (ex : 1-3, 5)</label>
+          <input type="text" id="convert-pages-input" placeholder="1-3, 5, 7-9">
+          <div class="split-hint">Utilisez des virgules et des tirets pour cibler certaines pages.</div>
+        </div>
+      </div>
+    </div>
+    <div class="pdf-controls" id="convert-controls" style="display:none">
+      <button class="pdf-btn pdf-btn-primary" onclick="downloadConvertedImages()">⬇ Télécharger les images</button>
+      <button class="pdf-btn pdf-btn-secondary" onclick="clearFiles('convert')">Effacer</button>
+    </div>
+    <div class="pdf-progress-wrap" id="convert-progress"><div class="pdf-progress-bar" id="convert-bar"></div></div>
+    <div class="pdf-status" id="convert-status"></div>
+  </div>
+
+  <!-- ═══════════ PANNEAU IMAGES VERS PDF ═══════════ -->
+  <div class="tool-panel" id="panel-imagepdf">
+    <div class="panel-header">
+      <span style="font-size:1.5rem">📰</span>
+      <h2>Convertir des images en PDF</h2>
+      <button class="panel-close" onclick="closePanel('imagepdf')">✕ Fermer</button>
+    </div>
+    <div class="pdf-drop-zone" id="imagepdf-drop" onclick="document.getElementById('imagepdf-input').click()">
+      <div class="pdf-drop-zone-icon">🖼️</div>
+      <h3>Deposer des images ici</h3>
+      <p>PNG ou JPG, plusieurs fichiers acceptes, glisser pour reordonner</p>
+      <input type="file" id="imagepdf-input" accept="image/png,image/jpeg" multiple>
+    </div>
+    <div id="imagepdf-config" style="display:none;margin-top:1.25rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="option-group">
+          <label>Format des pages</label>
+          <select id="imagepdf-size">
+            <option value="a4" selected>A4 portrait</option>
+            <option value="a4-landscape">A4 paysage</option>
+            <option value="letter">Letter portrait</option>
+            <option value="image">Conserver le format de l'image</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <label>Marge</label>
+          <select id="imagepdf-margin">
+            <option value="12">Petite</option>
+            <option value="24" selected>Standard</option>
+            <option value="40">Large</option>
+            <option value="0">Aucune</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="file-list" id="imagepdf-list"></div>
+    <div class="pdf-controls" id="imagepdf-controls" style="display:none">
+      <button class="pdf-btn pdf-btn-primary" onclick="downloadImagesAsPDF()">⬇ Télécharger le PDF</button>
+      <button class="pdf-btn pdf-btn-secondary" onclick="clearFiles('imagepdf')">Effacer</button>
+    </div>
+    <div class="pdf-progress-wrap" id="imagepdf-progress"><div class="pdf-progress-bar" id="imagepdf-bar"></div></div>
+    <div class="pdf-status" id="imagepdf-status"></div>
   </div>
 
   <!-- ═══════════ PANNEAU SIGNER ═══════════ -->
@@ -939,7 +1117,7 @@
 </section>
 
 <!-- ═══════════════ FOOTER ═══════════════ -->
-<footer>
+<footer id="footer">
   <strong>We love PDF</strong> — Outils 100 % locaux, aucun fichier envoyé sur un serveur.<br>
   Fait avec ♥ par <a href="https://sambec.github.io" target="_blank">Sarah Ambec</a>
 </footer>
@@ -956,6 +1134,9 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 const state = {
   merge:    { files: [], arrayBuffers: [] },
   split:    { file: null, ab: null, mode: 'all', totalPages: 0, selectedPages: new Set() },
+  pages:    { file: null, ab: null, totalPages: 0, order: [], selectedPages: new Set() },
+  convert:  { file: null, ab: null, totalPages: 0, pdfjsDoc: null },
+  imagepdf: { files: [], arrayBuffers: [] },
   sign:     { file: null, ab: null, sigDataURL: null, currentPage: 1, totalPages: 0, pdfjsDoc: null, placements: [] },
   rotate:   { file: null, ab: null, totalPages: 0, selectedPages: new Set() },
   watermark:{ file: null, ab: null, color: '#555555' },
@@ -975,6 +1156,14 @@ function openPanel(id) {
 function closePanel(id) {
   document.getElementById('panel-'+id).classList.remove('visible');
   document.querySelector('.tool-card.'+id)?.classList.remove('active');
+}
+function filterTools(category, btn) {
+  document.querySelectorAll('.tool-menu-btn').forEach(el => el.classList.remove('active'));
+  btn?.classList.add('active');
+  document.querySelectorAll('.tool-card').forEach(card => {
+    const matches = category === 'all' || card.dataset.category === category;
+    card.classList.toggle('hidden', !matches);
+  });
 }
 
 function setStatus(tool, msg, type='') {
@@ -1156,6 +1345,292 @@ function parseRanges(raw, total) {
     }
   }
   return out;
+}
+
+// ══════════════════════════════════════
+//  ORGANISER LES PAGES
+// ══════════════════════════════════════
+setupDrop('pages', files => loadPagesFile(files[0]));
+
+async function loadPagesFile(f) {
+  if (!f) return;
+  state.pages.file = f;
+  state.pages.ab = await f.arrayBuffer();
+  const doc = await PDFLib.PDFDocument.load(state.pages.ab);
+  state.pages.totalPages = doc.getPageCount();
+  state.pages.order = Array.from({ length: state.pages.totalPages }, (_, i) => i);
+  state.pages.selectedPages = new Set();
+  document.getElementById('pages-config').style.display = 'block';
+  document.getElementById('pages-controls').style.display = 'flex';
+  renderPagesGrid();
+  setStatus('pages', `Charge : ${f.name} (${state.pages.totalPages} pages)`);
+}
+function renderPagesGrid() {
+  const grid = document.getElementById('pages-grid');
+  grid.innerHTML = '';
+  state.pages.order.forEach((pageIndex, position) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'page-thumb sortable-thumb';
+    thumb.draggable = true;
+    thumb.dataset.pageIndex = pageIndex;
+    thumb.innerHTML = `<canvas></canvas><div class="page-num">p${pageIndex + 1}</div><div class="page-sel-badge page-order-badge">${position + 1}</div>`;
+    if (state.pages.selectedPages.has(pageIndex)) thumb.classList.add('selected');
+    thumb.addEventListener('click', e => {
+      if (e.target.closest('canvas')) togglePageSelection(pageIndex, thumb);
+      else if (e.target === thumb || e.target.classList.contains('page-num') || e.target.classList.contains('page-sel-badge')) {
+        togglePageSelection(pageIndex, thumb);
+      }
+    });
+    grid.appendChild(thumb);
+    renderPageThumb(state.pages.ab, pageIndex + 1, thumb.querySelector('canvas'));
+    setupGridSort(thumb, grid, '.sortable-thumb', () => {
+      state.pages.order = [...grid.querySelectorAll('.sortable-thumb')].map(el => +el.dataset.pageIndex);
+      renderPagesGrid();
+    });
+  });
+}
+function togglePageSelection(pageIndex, thumb) {
+  if (state.pages.selectedPages.has(pageIndex)) state.pages.selectedPages.delete(pageIndex);
+  else state.pages.selectedPages.add(pageIndex);
+  thumb.classList.toggle('selected', state.pages.selectedPages.has(pageIndex));
+}
+function clearPageSelection() {
+  state.pages.selectedPages.clear();
+  renderPagesGrid();
+}
+function deleteSelectedPages() {
+  if (!state.pages.selectedPages.size) {
+    return setStatus('pages', '✕ Selectionnez au moins une page a supprimer.', 'error');
+  }
+  if (state.pages.selectedPages.size >= state.pages.order.length) {
+    return setStatus('pages', '✕ Le PDF doit conserver au moins une page.', 'error');
+  }
+  state.pages.order = state.pages.order.filter(pageIndex => !state.pages.selectedPages.has(pageIndex));
+  const deleted = state.pages.selectedPages.size;
+  state.pages.selectedPages.clear();
+  renderPagesGrid();
+  setStatus('pages', `✓ ${deleted} page(s) supprimee(s). Pensez a telecharger le nouveau PDF.`, 'ok');
+}
+async function downloadOrganizedPages() {
+  if (!state.pages.ab || !state.pages.order.length) return;
+  setProgress('pages', 10);
+  setStatus('pages', 'Reorganisation en cours…');
+  try {
+    const { PDFDocument } = PDFLib;
+    const src = await PDFDocument.load(state.pages.ab);
+    const out = await PDFDocument.create();
+    const copied = await out.copyPages(src, state.pages.order);
+    copied.forEach(page => out.addPage(page));
+    download(await out.save(), 'pages-reorganisees.pdf');
+    setProgress('pages', 100);
+    setStatus('pages', `✓ PDF exporte avec ${state.pages.order.length} page(s).`, 'ok');
+  } catch (e) {
+    setStatus('pages', '✕ Erreur : ' + e.message, 'error');
+  }
+  setTimeout(() => setProgress('pages', 0), 1500);
+}
+
+// ══════════════════════════════════════
+//  CONVERTIR
+// ══════════════════════════════════════
+setupDrop('convert', files => loadConvertFile(files[0]));
+
+async function loadConvertFile(f) {
+  if (!f) return;
+  state.convert.file = f;
+  state.convert.ab = await f.arrayBuffer();
+  state.convert.pdfjsDoc = await pdfjsLib.getDocument({ data: state.convert.ab.slice(0) }).promise;
+  state.convert.totalPages = state.convert.pdfjsDoc.numPages;
+  document.getElementById('convert-config').style.display = 'block';
+  document.getElementById('convert-controls').style.display = 'flex';
+  toggleConvertPages();
+  toggleConvertQuality();
+  setStatus('convert', `Charge : ${f.name} (${state.convert.totalPages} pages)`);
+}
+function toggleConvertPages() {
+  const showCustom = document.getElementById('convert-pages').value === 'custom';
+  document.getElementById('convert-pages-wrap').style.display = showCustom ? 'block' : 'none';
+}
+function toggleConvertQuality() {
+  const isJpg = document.getElementById('convert-format').value === 'jpg';
+  document.getElementById('convert-quality-wrap').style.display = isJpg ? 'block' : 'none';
+}
+async function downloadConvertedImages() {
+  if (!state.convert.ab || !state.convert.pdfjsDoc) return;
+  setProgress('convert', 8);
+  setStatus('convert', 'Conversion des pages en cours…');
+  try {
+    const format = document.getElementById('convert-format').value;
+    const scale = parseFloat(document.getElementById('convert-scale').value);
+    const quality = parseInt(document.getElementById('convert-quality').value, 10) / 100;
+    const total = state.convert.totalPages;
+    const mode = document.getElementById('convert-pages').value;
+    const indices = mode === 'custom'
+      ? parsePageList(document.getElementById('convert-pages-input').value, total)
+      : [...Array(total).keys()];
+
+    if (!indices.length) {
+      return setStatus('convert', '✕ Aucune page valide selectionnee.', 'error');
+    }
+
+    const zip = new JSZip();
+    const baseName = getBaseName(state.convert.file.name);
+    for (let i = 0; i < indices.length; i++) {
+      const pageNumber = indices[i] + 1;
+      const page = await state.convert.pdfjsDoc.getPage(pageNumber);
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = Math.ceil(viewport.width);
+      canvas.height = Math.ceil(viewport.height);
+
+      if (format === 'jpg') {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
+      const blob = await canvasToBlob(canvas, mimeType, quality);
+      zip.file(`${baseName}_page-${String(pageNumber).padStart(2, '0')}.${format}`, blob);
+      setProgress('convert', 8 + ((i + 1) / indices.length) * 88);
+    }
+
+    if (indices.length === 1) {
+      const singleName = `${baseName}_page-${String(indices[0] + 1).padStart(2, '0')}.${format}`;
+      const singleBlob = await zip.file(singleName).async('blob');
+      downloadBlob(singleBlob, singleName);
+    } else {
+      const archive = await zip.generateAsync({ type: 'blob' });
+      downloadBlob(archive, `${baseName}_${format}.zip`);
+    }
+
+    setProgress('convert', 100);
+    setStatus('convert', `✓ ${indices.length} image(s) exportee(s) en ${format.toUpperCase()} !`, 'ok');
+  } catch (e) {
+    setStatus('convert', '✕ Erreur : ' + e.message, 'error');
+  }
+  setTimeout(() => setProgress('convert', 0), 1500);
+}
+
+// ══════════════════════════════════════
+//  IMAGES VERS PDF
+// ══════════════════════════════════════
+setupImageDrop('imagepdf', files => addImagePdfFiles(files));
+
+function setupImageDrop(id, onFiles) {
+  const zone = document.getElementById(id + '-drop');
+  const inp = document.getElementById(id + '-input');
+  if (!zone || !inp) return;
+  const accept = file => /^image\/(png|jpeg)$/.test(file.type);
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    onFiles([...e.dataTransfer.files].filter(accept));
+  });
+  inp.addEventListener('change', () => onFiles([...inp.files].filter(accept)));
+}
+async function addImagePdfFiles(files) {
+  const validFiles = files.filter(file => /^image\/(png|jpeg)$/.test(file.type));
+  for (const file of validFiles) {
+    state.imagepdf.files.push(file);
+    state.imagepdf.arrayBuffers.push(await file.arrayBuffer());
+  }
+  document.getElementById('imagepdf-config').style.display = state.imagepdf.files.length ? 'block' : 'none';
+  document.getElementById('imagepdf-controls').style.display = state.imagepdf.files.length ? 'flex' : 'none';
+  renderImagePdfList();
+  if (validFiles.length) setStatus('imagepdf', `${state.imagepdf.files.length} image(s) chargee(s).`);
+}
+function renderImagePdfList() {
+  const list = document.getElementById('imagepdf-list');
+  list.innerHTML = '';
+  state.imagepdf.files.forEach((file, i) => {
+    const item = document.createElement('div');
+    item.className = 'file-item';
+    item.draggable = true;
+    item.dataset.idx = i;
+    item.innerHTML = `<div class="file-drag-handle">⠿</div>
+      <div class="file-thumb" id="imgthumb-${i}"></div>
+      <div class="file-info">
+        <div class="fname">${file.name}</div>
+        <div class="fmeta">${file.type.replace('image/', '').toUpperCase()} • ${(file.size / 1024).toFixed(1)} KB</div>
+      </div>
+      <button class="file-remove" onclick="removeImagePdfFile(${i})">✕</button>`;
+    list.appendChild(item);
+    renderImageThumb(file, `imgthumb-${i}`);
+    setupDragSort(item, list, () => {
+      const order = [...list.querySelectorAll('.file-item')].map(el => +el.dataset.idx);
+      state.imagepdf.files = order.map(idx => state.imagepdf.files[idx]);
+      state.imagepdf.arrayBuffers = order.map(idx => state.imagepdf.arrayBuffers[idx]);
+      renderImagePdfList();
+    });
+  });
+}
+function renderImageThumb(file, containerId) {
+  const img = document.createElement('img');
+  img.alt = file.name;
+  img.src = URL.createObjectURL(file);
+  img.onload = () => URL.revokeObjectURL(img.src);
+  const container = document.getElementById(containerId);
+  if (container) container.appendChild(img);
+}
+function removeImagePdfFile(i) {
+  state.imagepdf.files.splice(i, 1);
+  state.imagepdf.arrayBuffers.splice(i, 1);
+  renderImagePdfList();
+  const hasFiles = state.imagepdf.files.length > 0;
+  document.getElementById('imagepdf-config').style.display = hasFiles ? 'block' : 'none';
+  document.getElementById('imagepdf-controls').style.display = hasFiles ? 'flex' : 'none';
+  setStatus('imagepdf', hasFiles ? `${state.imagepdf.files.length} image(s) restante(s).` : '');
+}
+async function downloadImagesAsPDF() {
+  if (!state.imagepdf.files.length) return;
+  setProgress('imagepdf', 10);
+  setStatus('imagepdf', 'Creation du PDF en cours…');
+  try {
+    const { PDFDocument } = PDFLib;
+    const doc = await PDFDocument.create();
+    const pageMode = document.getElementById('imagepdf-size').value;
+    const margin = parseFloat(document.getElementById('imagepdf-margin').value);
+    for (let i = 0; i < state.imagepdf.files.length; i++) {
+      const file = state.imagepdf.files[i];
+      const bytes = state.imagepdf.arrayBuffers[i];
+      const image = file.type === 'image/png'
+        ? await doc.embedPng(bytes)
+        : await doc.embedJpg(bytes);
+      const pageSize = getImagePdfPageSize(pageMode, image);
+      const page = doc.addPage(pageSize);
+      const availableWidth = pageSize[0] - margin * 2;
+      const availableHeight = pageSize[1] - margin * 2;
+      const ratio = Math.min(availableWidth / image.width, availableHeight / image.height);
+      const drawWidth = image.width * ratio;
+      const drawHeight = image.height * ratio;
+      page.drawImage(image, {
+        x: (pageSize[0] - drawWidth) / 2,
+        y: (pageSize[1] - drawHeight) / 2,
+        width: drawWidth,
+        height: drawHeight
+      });
+      setProgress('imagepdf', 10 + ((i + 1) / state.imagepdf.files.length) * 85);
+    }
+    download(await doc.save(), 'images-vers-pdf.pdf');
+    setProgress('imagepdf', 100);
+    setStatus('imagepdf', `✓ PDF cree avec ${state.imagepdf.files.length} page(s).`, 'ok');
+  } catch (e) {
+    setStatus('imagepdf', '✕ Erreur : ' + e.message, 'error');
+  }
+  setTimeout(() => setProgress('imagepdf', 0), 1500);
+}
+function getImagePdfPageSize(mode, image) {
+  const sizes = {
+    a4: [595.28, 841.89],
+    'a4-landscape': [841.89, 595.28],
+    letter: [612, 792]
+  };
+  if (mode === 'image') return [image.width, image.height];
+  return sizes[mode] || sizes.a4;
 }
 
 // ══════════════════════════════════════
@@ -1881,12 +2356,16 @@ function clearFiles(tool) {
     document.getElementById('merge-list').innerHTML='';
     document.getElementById('merge-btn').disabled=true;
   }
+  if (tool==='imagepdf') {
+    document.getElementById('imagepdf-list').innerHTML = '';
+  }
   if (tool==='annotate') {
     document.getElementById('annotate-ui').style.display='none';
     Object.keys(annotData).forEach(k => delete annotData[k]);
   }
-  ['split-config','split-controls','rotate-config','rotate-controls',
+  ['split-config','split-controls','pages-config','pages-controls','rotate-config','rotate-controls',
    'watermark-config','watermark-controls','compress-controls',
+   'convert-config','convert-controls','imagepdf-config','imagepdf-controls',
    'resize-config','resize-controls',
    'sign-area','sign-controls','sign-pdf-section'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.style.display='none';
@@ -1920,10 +2399,21 @@ async function renderPageThumb(ab, pageNum, canvas) {
 }
 function download(bytes, name) {
   const blob=new Blob([bytes],{type:'application/pdf'});
+  downloadBlob(blob, name);
+}
+function downloadBlob(blob, name) {
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob); a.download=name;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(a.href),60000);
+}
+function canvasToBlob(canvas, type, quality) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Impossible de generer l image.')), type, quality);
+  });
+}
+function getBaseName(filename) {
+  return filename.replace(/\.[^.]+$/, '');
 }
 function setupDragSort(el, container, onDone) {
   el.addEventListener('dragstart', e=>{ e.dataTransfer.effectAllowed='move'; el.style.opacity='0.5'; container._dragging=el; });
@@ -1937,6 +2427,32 @@ function setupDragSort(el, container, onDone) {
       const items=[...container.querySelectorAll('.file-item')];
       if(items.indexOf(dragging)<items.indexOf(el)) container.insertBefore(dragging,el.nextSibling);
       else container.insertBefore(dragging,el);
+    }
+  });
+}
+function setupGridSort(el, container, selector, onDone) {
+  el.addEventListener('dragstart', e => {
+    e.dataTransfer.effectAllowed = 'move';
+    el.style.opacity = '0.5';
+    container._dragging = el;
+  });
+  el.addEventListener('dragend', () => {
+    el.style.opacity = '1';
+    onDone();
+  });
+  el.addEventListener('dragover', e => {
+    e.preventDefault();
+    el.classList.add('drag-over');
+  });
+  el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+  el.addEventListener('drop', e => {
+    e.preventDefault();
+    el.classList.remove('drag-over');
+    const dragging = container._dragging;
+    if (dragging && dragging !== el) {
+      const items = [...container.querySelectorAll(selector)];
+      if (items.indexOf(dragging) < items.indexOf(el)) container.insertBefore(dragging, el.nextSibling);
+      else container.insertBefore(dragging, el);
     }
   });
 }

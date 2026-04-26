@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Lab</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    :root {
+      --bg: var(--tb-bg);
+      --surface: var(--tb-surface);
+      --ink: var(--tb-ink);
+      --muted: var(--tb-muted);
+      --accent: var(--tb-accent);
+      --accent-2: var(--tb-accent-2);
+      --line: var(--tb-border);
+      --soft: var(--tb-light);
+      --radius: 18px;
+      --shadow: var(--tb-shadow-md);
+      --font-display: var(--tb-font-display);
+      --font-body: var(--tb-font-body);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 24%),
+        linear-gradient(180deg, #fbfdff 0%, var(--bg) 100%);
+    }
+
+    .shell {
+      width: min(1260px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 24px 0 44px;
+    }
+
+    .hero,
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 28px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      font-family: var(--font-display);
+      letter-spacing: -0.03em;
+    }
+
+    h1 {
+      margin-top: 16px;
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      line-height: 1.05;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin-top: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .toolbar a,
+    .toolbar button {
+      text-decoration: none;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font: inherit;
+    }
+
+    .toolbar button {
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 22px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 22px;
+    }
+
+    .card {
+      padding: 22px;
+    }
+
+    .dropzone {
+      border: 2px dashed var(--line);
+      border-radius: 18px;
+      padding: 28px;
+      text-align: center;
+      background: #fbfdff;
+      cursor: pointer;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .dropzone.dragover,
+    .dropzone:hover {
+      border-color: var(--accent);
+      background: var(--soft);
+    }
+
+    .dropzone input { display: none; }
+
+    .meta,
+    .card p,
+    .swatch small,
+    .icon-card p,
+    .formula-note,
+    .mode-note {
+      color: var(--muted);
+    }
+
+    .row,
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .controls { margin-top: 14px; }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    select,
+    input[type="range"],
+    input[type="search"],
+    input[type="text"],
+    button {
+      font: inherit;
+    }
+
+    select,
+    input[type="range"],
+    input[type="search"],
+    input[type="text"] {
+      width: 100%;
+    }
+
+    select,
+    input[type="search"],
+    input[type="text"] {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 13px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .primary,
+    .secondary {
+      border-radius: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      border: 0;
+    }
+
+    .secondary {
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--ink);
+    }
+
+    .mode-btn.active {
+      background: var(--soft);
+      color: var(--accent);
+      border-color: rgba(193,68,14,.25);
+    }
+
+    .viewer {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #f8fafc;
+      overflow: auto;
+      min-height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      cursor: crosshair;
+    }
+
+    #image-canvas {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    #crop-box {
+      position: absolute;
+      border: 2px dashed var(--accent);
+      background: rgba(193, 68, 14, 0.12);
+      display: none;
+      pointer-events: none;
+    }
+
+    .loupe {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 92px;
+      background: rgba(255,255,255,.96);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: none;
+      pointer-events: none;
+    }
+
+    .loupe-canvas {
+      width: 100%;
+      height: 92px;
+      image-rendering: pixelated;
+      display: block;
+      background: #fff;
+    }
+
+    .loupe-info {
+      padding: 8px 10px 10px;
+      font-size: 0.78rem;
+    }
+
+    .cols-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .cols-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .result-box {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .color-inspector {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 14px;
+      align-items: center;
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .color-preview {
+      width: 96px;
+      height: 96px;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,.08);
+      background: #f1f5f9;
+    }
+
+    .color-values strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1.15rem;
+    }
+
+    .value-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 12px;
+      font-size: 0.88rem;
+    }
+
+    .wheel-wrap {
+      display: grid;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .wheel-stage {
+      display: grid;
+      grid-template-columns: 210px 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+
+    #color-wheel {
+      width: 210px;
+      height: 210px;
+      display: block;
+      margin: 0 auto;
+      cursor: crosshair;
+    }
+
+    .slider-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .slider-stack input[type="range"] {
+      accent-color: var(--accent);
+    }
+
+    .palette-toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .swatch {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .swatch-color {
+      height: 82px;
+      position: relative;
+    }
+
+    .swatch-badge {
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.88);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .swatch-info {
+      padding: 10px 12px;
+    }
+
+    .swatch strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .hint-list {
+      margin: 14px 0 0;
+      padding-left: 18px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 980px) {
+      .layout,
+      .cols-2,
+      .cols-3,
+      .wheel-stage,
+      .value-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .color-inspector {
+        grid-template-columns: 1fr;
+      }
+
+      .color-preview {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body class="toolbox-page">
+  <header class="toolbox-topbar">
+    <div class="toolbox-topbar-inner">
+      <a href="main.html" class="toolbox-brand">
+        <span class="toolbox-brand-mark">♥</span>
+        My <em>little</em> toolbox
+      </a>
+      <nav class="toolbox-nav">
+        <a href="main.html">Accueil</a>
+        <a href="index.html">PDF</a>
+        <a href="counters.html">Compteurs</a>
+        <a href="markdown-studio.html">Markdown</a>
+        <a href="image-lab.html" class="active">Images</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="shell toolbox-shell">
+    <section class="hero toolbox-hero">
+      <span class="eyebrow toolbox-eyebrow">Image Lab</span>
+      <h1>Convertir, rogner, pipeter et fabriquer des palettes</h1>
+      <p class="lead">Chargez une image PNG ou JPG, convertissez-la, choisissez vos couleurs a la pipette, composez une palette avec roue chromatique et explorez un mini catalogue d'icones exportables en PNG.</p>
+      <div class="toolbar toolbox-linkbar">
+        <a href="index.html">Retour PDF</a>
+        <button id="clear-image">Effacer l'image</button>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="stack">
+        <article class="card">
+          <h2>Importer une image</h2>
+          <p>PNG et JPG sont supportes pour la conversion, la palette et la pipette. Le fond blanc est applique automatiquement lors d'une conversion vers JPG.</p>
+          <label class="dropzone" id="dropzone">
+            <strong>Deposer une image ici</strong><br>
+            <span class="meta">ou cliquer pour parcourir</span>
+            <input id="image-input" type="file" accept="image/png,image/jpeg">
+          </label>
+          <div class="result-box" id="image-meta">
+            <strong>Aucune image chargee</strong>
+            <div class="meta">Les dimensions et le format apparaitront ici.</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>Convertisseur de format</h2>
+          <div class="cols-2">
+            <div>
+              <label for="format-select">Format cible</label>
+              <select id="format-select">
+                <option value="image/png">PNG</option>
+                <option value="image/jpeg">JPG</option>
+                <option value="image/webp">WebP</option>
+              </select>
+            </div>
+            <div>
+              <label for="quality-range">Qualite</label>
+              <input id="quality-range" type="range" min="0.5" max="1" step="0.05" value="0.9">
+            </div>
+          </div>
+          <div class="controls">
+            <button class="primary" id="download-converted">Telecharger l'image convertie</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>Roue chromatique & couleur active</h2>
+          <p>Choisissez une couleur a la main, ajustez la saturation et la luminosite, puis ajoutez-la a la palette.</p>
+          <div class="wheel-wrap">
+            <div class="wheel-stage">
+              <canvas id="color-wheel" width="210" height="210"></canvas>
+              <div class="slider-stack">
+                <div>
+                  <label for="sat-range">Saturation</label>
+                  <input id="sat-range" type="range" min="0" max="100" value="80">
+                </div>
+                <div>
+                  <label for="light-range">Luminosite</label>
+                  <input id="light-range" type="range" min="0" max="100" value="55">
+                </div>
+                <div class="controls">
+                  <button class="primary" id="add-wheel-color">Ajouter a la palette</button>
+                </div>
+              </div>
+            </div>
+            <div class="color-inspector">
+              <div class="color-preview" id="active-color-preview"></div>
+              <div class="color-values">
+                <strong id="active-hex">#C1440E</strong>
+                <div class="value-grid">
+                  <div><span class="formula-note">RGB</span><br><span id="active-rgb">rgb(193, 68, 14)</span></div>
+                  <div><span class="formula-note">HSL</span><br><span id="active-hsl">hsl(18, 86%, 41%)</span></div>
+                  <div><span class="formula-note">Source</span><br><span id="active-source">Roue chromatique</span></div>
+                  <div><span class="formula-note">Coordonnees</span><br><span id="active-coords">-</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+      <div class="stack">
+        <article class="card">
+          <h2>Rogneur & pipette</h2>
+          <p>Choisissez un mode avant d'interagir avec l'image: rognage pour dessiner une zone, pipette pour lire une couleur.</p>
+          <div class="controls">
+            <button class="secondary mode-btn active" id="mode-crop">Mode rognage</button>
+            <button class="secondary mode-btn" id="mode-picker">Mode pipette</button>
+          </div>
+          <div class="mode-note" id="mode-note">Le rognage est actif. Cliquez et glissez sur l'image.</div>
+          <div class="viewer" id="viewer">
+            <canvas id="image-canvas"></canvas>
+            <div id="crop-box"></div>
+            <div class="loupe" id="loupe">
+              <canvas class="loupe-canvas" id="loupe-canvas" width="92" height="92"></canvas>
+              <div class="loupe-info" id="loupe-info">Pipette inactive</div>
+            </div>
+          </div>
+          <div class="controls">
+            <button class="primary" id="download-crop">Telecharger le rognage</button>
+            <button class="secondary" id="reset-crop">Reinitialiser la selection</button>
+            <button class="secondary" id="add-picked-color">Ajouter la couleur pipettee</button>
+          </div>
+          <ul class="hint-list">
+            <li>Le rognage, la pipette et la palette travaillent sur l'image actuellement chargee.</li>
+            <li>La pipette affiche un zoom pixel et recupere les couleurs exactes du canvas.</li>
+            <li>Le format de sortie du rognage suit le selecteur de conversion.</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="row" style="justify-content:space-between;align-items:end">
+            <div>
+              <h2>Generateur de palette</h2>
+              <p>Extraction plus fine avec couleurs dominantes, pourcentages et ajout manuel.</p>
+            </div>
+          </div>
+          <div class="palette-toolbar">
+            <div class="row" style="flex:1">
+              <div style="min-width:180px;flex:1">
+                <label for="palette-name">Nom de la palette</label>
+                <input id="palette-name" type="text" value="Palette Image Lab" placeholder="Nom de la palette">
+              </div>
+              <div style="min-width:180px;flex:1">
+                <label for="palette-size">Nombre exact de couleurs</label>
+                <input id="palette-size" type="text" value="5" inputmode="numeric" placeholder="ex : 7">
+              </div>
+            </div>
+            <div class="controls" style="margin-top:0">
+              <button class="primary" id="extract-palette">Extraire la palette</button>
+              <button class="secondary" id="copy-palette-css">Copier en CSS</button>
+              <button class="secondary" id="download-palette-image">Telecharger la palette en image</button>
+              <button class="secondary" id="clear-palette">Vider la palette</button>
+            </div>
+          </div>
+          <div class="palette" id="palette"></div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const input = document.getElementById("image-input");
+    const dropzone = document.getElementById("dropzone");
+    const canvas = document.getElementById("image-canvas");
+    const ctx = canvas.getContext("2d");
+    const cropBox = document.getElementById("crop-box");
+    const imageMeta = document.getElementById("image-meta");
+    const paletteEl = document.getElementById("palette");
+    const viewer = document.getElementById("viewer");
+    const loupe = document.getElementById("loupe");
+    const loupeCanvas = document.getElementById("loupe-canvas");
+    const loupeCtx = loupeCanvas.getContext("2d");
+    const loupeInfo = document.getElementById("loupe-info");
+    const wheelCanvas = document.getElementById("color-wheel");
+    const wheelCtx = wheelCanvas.getContext("2d");
+    const state = {
+      image: null,
+      name: "image",
+      type: "image/png",
+      crop: null,
+      dragging: false,
+      startX: 0,
+      startY: 0,
+      mode: "crop",
+      palette: [],
+      pickedColor: null,
+      activeColor: { hex: "#C1440E", rgb: [193, 68, 14], hsl: [18, 86, 41], source: "Roue chromatique", coords: "-" },
+      wheelHue: 18,
+      wheelSat: 80,
+      wheelLight: 55
+    };
+
+    function loadFile(file) {
+      if (!file || !/^image\/(png|jpeg)$/.test(file.type)) return;
+      state.name = file.name.replace(/\.[^.]+$/, "");
+      state.type = file.type;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          state.image = img;
+          fitCanvas(img);
+          resetCrop();
+          hideLoupe();
+          imageMeta.innerHTML = `<strong>${file.name}</strong><div class="meta">${img.width} × ${img.height} px • ${file.type.replace("image/", "").toUpperCase()}</div>`;
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function fitCanvas(img) {
+      const maxWidth = Math.min(860, window.innerWidth - 100);
+      const scale = Math.min(1, maxWidth / img.width);
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      redrawCanvas();
+    }
+
+    function redrawCanvas() {
+      if (!state.image) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(state.image, 0, 0, canvas.width, canvas.height);
+    }
+
+    function drawSelection() {
+      if (!state.crop) {
+        cropBox.style.display = "none";
+        return;
+      }
+      cropBox.style.display = "block";
+      cropBox.style.left = `${state.crop.x}px`;
+      cropBox.style.top = `${state.crop.y}px`;
+      cropBox.style.width = `${state.crop.w}px`;
+      cropBox.style.height = `${state.crop.h}px`;
+    }
+
+    function pointerPosition(event) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+      };
+    }
+
+    function canvasToImageCoords(pos) {
+      if (!state.image || !canvas.width || !canvas.height) return null;
+      return {
+        x: Math.max(0, Math.min(state.image.width - 1, Math.round(pos.x * state.image.width / canvas.width))),
+        y: Math.max(0, Math.min(state.image.height - 1, Math.round(pos.y * state.image.height / canvas.height)))
+      };
+    }
+
+    function resetCrop() {
+      state.crop = null;
+      drawSelection();
+    }
+
+    function currentMime() {
+      return document.getElementById("format-select").value;
+    }
+
+    function currentQuality() {
+      return parseFloat(document.getElementById("quality-range").value);
+    }
+
+    function createOutputCanvas(sourceCanvas, crop) {
+      const out = document.createElement("canvas");
+      const octx = out.getContext("2d");
+      const mime = currentMime();
+
+      out.width = crop ? crop.w : sourceCanvas.width;
+      out.height = crop ? crop.h : sourceCanvas.height;
+
+      if (mime === "image/jpeg") {
+        octx.fillStyle = "#ffffff";
+        octx.fillRect(0, 0, out.width, out.height);
+      }
+
+      if (crop) {
+        octx.drawImage(sourceCanvas, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h);
+      } else {
+        octx.drawImage(sourceCanvas, 0, 0);
+      }
+      return out;
+    }
+
+    function downloadCanvas(sourceCanvas, crop, suffix) {
+      if (!state.image) return;
+      const out = createOutputCanvas(sourceCanvas, crop);
+      const mime = currentMime();
+      const extMap = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" };
+      out.toBlob(blob => {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${state.name}-${suffix}.${extMap[mime]}`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 30000);
+      }, mime, currentQuality());
+    }
+
+    function rgbToHex(r, g, b) {
+      return `#${[r, g, b].map(v => v.toString(16).padStart(2, "0")).join("")}`.toUpperCase();
+    }
+
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          default: h = (r - g) / d + 4;
+        }
+        h /= 6;
+      }
+      return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+    }
+
+    function hslToRgb(h, s, l) {
+      s /= 100;
+      l /= 100;
+      const c = (1 - Math.abs(2 * l - 1)) * s;
+      const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+      const m = l - c / 2;
+      let r = 0, g = 0, b = 0;
+      if (h < 60) [r, g, b] = [c, x, 0];
+      else if (h < 120) [r, g, b] = [x, c, 0];
+      else if (h < 180) [r, g, b] = [0, c, x];
+      else if (h < 240) [r, g, b] = [0, x, c];
+      else if (h < 300) [r, g, b] = [x, 0, c];
+      else [r, g, b] = [c, 0, x];
+      return [
+        Math.round((r + m) * 255),
+        Math.round((g + m) * 255),
+        Math.round((b + m) * 255)
+      ];
+    }
+
+    function setActiveColorFromRgb(r, g, b, source, coords = "-") {
+      const hex = rgbToHex(r, g, b);
+      const hsl = rgbToHsl(r, g, b);
+      state.activeColor = { hex, rgb: [r, g, b], hsl, source, coords };
+      document.getElementById("active-color-preview").style.background = hex;
+      document.getElementById("active-hex").textContent = hex;
+      document.getElementById("active-rgb").textContent = `rgb(${r}, ${g}, ${b})`;
+      document.getElementById("active-hsl").textContent = `hsl(${hsl[0]}, ${hsl[1]}%, ${hsl[2]}%)`;
+      document.getElementById("active-source").textContent = source;
+      document.getElementById("active-coords").textContent = coords;
+    }
+
+    function addColorToPalette(color) {
+      if (!color) return;
+      const exists = state.palette.some(item => item.hex === color.hex);
+      if (!exists) state.palette.push({ ...color });
+      renderPalette();
+    }
+
+    function renderPalette() {
+      paletteEl.innerHTML = "";
+      state.palette.forEach((item, index) => {
+        const swatch = document.createElement("div");
+        swatch.className = "swatch";
+        swatch.innerHTML = `
+          <div class="swatch-color" style="background:${item.hex}">
+            ${item.weight != null ? `<span class="swatch-badge">${item.weight}%</span>` : ""}
+          </div>
+          <div class="swatch-info">
+            <strong>${item.hex}</strong>
+            <small>${item.label || `rgb(${item.rgb.join(", ")})`}</small>
+          </div>
+        `;
+        swatch.addEventListener("click", () => setActiveColorFromRgb(item.rgb[0], item.rgb[1], item.rgb[2], item.source || "Palette", item.coords || "-"));
+        swatch.addEventListener("contextmenu", event => {
+          event.preventDefault();
+          state.palette.splice(index, 1);
+          renderPalette();
+        });
+        paletteEl.appendChild(swatch);
+      });
+    }
+
+    function copyPaletteAsCss() {
+      if (!state.palette.length) return;
+      const css = [":root {"]
+        .concat(state.palette.map((item, index) => `  --palette-${index + 1}: ${item.hex};`))
+        .concat(["}"])
+        .join("\n");
+      navigator.clipboard.writeText(css);
+    }
+
+    function extractPalette() {
+      if (!state.image) return;
+      const targetCount = clampPaletteSize(document.getElementById("palette-size").value);
+      const sample = document.createElement("canvas");
+      const sctx = sample.getContext("2d");
+      const w = 80;
+      const h = Math.max(1, Math.round((canvas.height / canvas.width) * w));
+      sample.width = w;
+      sample.height = h;
+      sctx.drawImage(canvas, 0, 0, w, h);
+      const data = sctx.getImageData(0, 0, w, h).data;
+      const pixels = [];
+
+      for (let i = 0; i < data.length; i += 16) {
+        pixels.push([data[i], data[i + 1], data[i + 2]]);
+      }
+      if (!pixels.length) return;
+
+      let centers = [];
+      for (let i = 0; i < targetCount; i++) {
+        centers.push(pixels[Math.floor(i * pixels.length / targetCount)] || pixels[0]);
+      }
+
+      for (let iter = 0; iter < 6; iter++) {
+        const groups = Array.from({ length: centers.length }, () => []);
+        pixels.forEach(pixel => {
+          let minDist = Infinity;
+          let minIndex = 0;
+          centers.forEach((center, index) => {
+            const dist = Math.hypot(pixel[0] - center[0], pixel[1] - center[1], pixel[2] - center[2]);
+            if (dist < minDist) {
+              minDist = dist;
+              minIndex = index;
+            }
+          });
+          groups[minIndex].push(pixel);
+        });
+        centers = groups.map((group, index) => {
+          if (!group.length) return centers[index];
+          const sums = group.reduce((acc, pixel) => [acc[0] + pixel[0], acc[1] + pixel[1], acc[2] + pixel[2]], [0, 0, 0]);
+          return sums.map(sum => Math.round(sum / group.length));
+        });
+      }
+
+      const enriched = centers.map(center => {
+        const count = pixels.filter(pixel => nearestCenterIndex(pixel, centers) === centers.indexOf(center)).length;
+        const hex = rgbToHex(center[0], center[1], center[2]);
+        return {
+          hex,
+          rgb: center,
+          hsl: rgbToHsl(center[0], center[1], center[2]),
+          source: "Palette extraite",
+          weight: Math.round((count / pixels.length) * 100),
+          label: `rgb(${center.join(", ")})`
+        };
+      }).sort((a, b) => b.weight - a.weight);
+
+      state.palette = dedupePalette(enriched);
+      renderPalette();
+      if (state.palette[0]) setActiveColorFromRgb(state.palette[0].rgb[0], state.palette[0].rgb[1], state.palette[0].rgb[2], "Palette extraite", "-");
+    }
+
+    function nearestCenterIndex(pixel, centers) {
+      let minDist = Infinity;
+      let minIndex = 0;
+      centers.forEach((center, index) => {
+        const dist = Math.hypot(pixel[0] - center[0], pixel[1] - center[1], pixel[2] - center[2]);
+        if (dist < minDist) {
+          minDist = dist;
+          minIndex = index;
+        }
+      });
+      return minIndex;
+    }
+
+    function dedupePalette(items) {
+      const out = [];
+      items.forEach(item => {
+        const tooClose = out.some(existing => Math.hypot(existing.rgb[0] - item.rgb[0], existing.rgb[1] - item.rgb[1], existing.rgb[2] - item.rgb[2]) < 18);
+        if (!tooClose) out.push(item);
+      });
+      return out;
+    }
+
+    function showLoupe(imageCoords, canvasCoords) {
+      if (!state.image) return;
+      const sampleSize = 11;
+      const sx = Math.max(0, Math.min(state.image.width - sampleSize, imageCoords.x - Math.floor(sampleSize / 2)));
+      const sy = Math.max(0, Math.min(state.image.height - sampleSize, imageCoords.y - Math.floor(sampleSize / 2)));
+      loupeCtx.clearRect(0, 0, loupeCanvas.width, loupeCanvas.height);
+      loupeCtx.imageSmoothingEnabled = false;
+      loupeCtx.drawImage(state.image, sx, sy, sampleSize, sampleSize, 0, 0, loupeCanvas.width, loupeCanvas.height);
+      loupeCtx.strokeStyle = "#ffffff";
+      loupeCtx.lineWidth = 1;
+      loupeCtx.strokeRect(40.5, 40.5, 11, 11);
+      loupe.style.display = "block";
+      loupeInfo.textContent = `${imageCoords.x}, ${imageCoords.y}`;
+      const viewerRect = viewer.getBoundingClientRect();
+      const left = Math.min(viewer.clientWidth - 106, Math.max(14, canvasCoords.x + 28));
+      const top = Math.min(viewer.clientHeight - 132, Math.max(14, canvasCoords.y + 12));
+      loupe.style.left = `${left}px`;
+      loupe.style.top = `${top}px`;
+    }
+
+    function hideLoupe() {
+      loupe.style.display = "none";
+    }
+
+    function pickColorAt(pos) {
+      if (!state.image) return;
+      const imageCoords = canvasToImageCoords(pos);
+      if (!imageCoords) return;
+      const pixel = ctx.getImageData(Math.max(0, Math.min(canvas.width - 1, Math.round(pos.x))), Math.max(0, Math.min(canvas.height - 1, Math.round(pos.y))), 1, 1).data;
+      const rgb = [pixel[0], pixel[1], pixel[2]];
+      state.pickedColor = {
+        hex: rgbToHex(rgb[0], rgb[1], rgb[2]),
+        rgb,
+        hsl: rgbToHsl(rgb[0], rgb[1], rgb[2]),
+        source: "Pipette",
+        coords: `${imageCoords.x}, ${imageCoords.y}`,
+        label: `rgb(${rgb.join(", ")})`
+      };
+      setActiveColorFromRgb(rgb[0], rgb[1], rgb[2], "Pipette", `${imageCoords.x}, ${imageCoords.y}`);
+      showLoupe(imageCoords, pos);
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      document.getElementById("mode-crop").classList.toggle("active", mode === "crop");
+      document.getElementById("mode-picker").classList.toggle("active", mode === "picker");
+      viewer.style.cursor = mode === "picker" ? "copy" : "crosshair";
+      document.getElementById("mode-note").textContent = mode === "picker"
+        ? "La pipette est active. Deplacez-vous sur l'image puis cliquez pour memoriser une couleur."
+        : "Le rognage est actif. Cliquez et glissez sur l'image.";
+      if (mode !== "picker") hideLoupe();
+    }
+
+    function drawColorWheel() {
+      const size = wheelCanvas.width;
+      const radius = size / 2;
+      wheelCtx.clearRect(0, 0, size, size);
+      for (let angle = 0; angle < 360; angle += 1) {
+        wheelCtx.beginPath();
+        wheelCtx.moveTo(radius, radius);
+        wheelCtx.arc(radius, radius, radius - 2, (angle - 1) * Math.PI / 180, angle * Math.PI / 180);
+        wheelCtx.closePath();
+        wheelCtx.fillStyle = `hsl(${angle}, 100%, 50%)`;
+        wheelCtx.fill();
+      }
+      wheelCtx.beginPath();
+      wheelCtx.fillStyle = "#fff";
+      wheelCtx.arc(radius, radius, radius * 0.36, 0, Math.PI * 2);
+      wheelCtx.fill();
+
+      const markerAngle = state.wheelHue * Math.PI / 180;
+      const markerRadius = radius * 0.72;
+      const markerX = radius + Math.cos(markerAngle) * markerRadius;
+      const markerY = radius + Math.sin(markerAngle) * markerRadius;
+      wheelCtx.beginPath();
+      wheelCtx.arc(markerX, markerY, 8, 0, Math.PI * 2);
+      wheelCtx.fillStyle = "#fff";
+      wheelCtx.fill();
+      wheelCtx.strokeStyle = "#111827";
+      wheelCtx.lineWidth = 2;
+      wheelCtx.stroke();
+
+      const rgb = hslToRgb(state.wheelHue, state.wheelSat, state.wheelLight);
+      setActiveColorFromRgb(rgb[0], rgb[1], rgb[2], "Roue chromatique", "-");
+    }
+
+    function updateWheelFromPointer(event) {
+      const rect = wheelCanvas.getBoundingClientRect();
+      const x = event.clientX - rect.left - rect.width / 2;
+      const y = event.clientY - rect.top - rect.height / 2;
+      const angle = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+      state.wheelHue = Math.round(angle);
+      drawColorWheel();
+    }
+
+    function clampPaletteSize(rawValue) {
+      const parsed = parseInt(rawValue, 10);
+      const safe = Number.isFinite(parsed) ? parsed : 5;
+      return Math.max(1, Math.min(24, safe));
+    }
+
+    function downloadPaletteImage() {
+      if (!state.palette.length) return;
+      const count = state.palette.length;
+      const paletteName = (document.getElementById("palette-name").value || "Palette Image Lab").trim();
+      const width = 1400;
+      const heroHeight = 250;
+      const columns = Math.min(4, count);
+      const rows = Math.ceil(count / columns);
+      const cardWidth = Math.floor((width - 80 - (columns - 1) * 20) / columns);
+      const cardHeight = 164;
+      const paletteHeight = rows * cardHeight + (rows - 1) * 20;
+      const height = heroHeight + paletteHeight + 100;
+      const out = document.createElement("canvas");
+      out.width = width;
+      out.height = height;
+      const octx = out.getContext("2d");
+
+      octx.fillStyle = "#faf9f6";
+      octx.fillRect(0, 0, width, height);
+      octx.fillStyle = "#ffffff";
+      roundRect(octx, 24, 24, width - 48, height - 48, 28);
+      octx.fill();
+
+      octx.fillStyle = "#c1440e";
+      octx.font = "700 26px 'DM Sans', sans-serif";
+      octx.fillText("Palette exportee", 48, 66);
+      octx.fillStyle = "#1a1a2e";
+      octx.font = "600 54px 'DM Serif Display', Georgia, serif";
+      octx.fillText(paletteName, 48, 128);
+      octx.fillStyle = "#6b7280";
+      octx.font = "400 22px 'DM Sans', sans-serif";
+      octx.fillText(`${count} couleur${count > 1 ? "s" : ""}`, 48, 164);
+
+      if (state.image) {
+        const previewW = 250;
+        const previewH = 160;
+        const x = width - 48 - previewW;
+        const y = 48;
+        octx.save();
+        roundRect(octx, x, y, previewW, previewH, 20);
+        octx.clip();
+        const ratio = Math.max(previewW / state.image.width, previewH / state.image.height);
+        const drawW = state.image.width * ratio;
+        const drawH = state.image.height * ratio;
+        octx.drawImage(state.image, x + (previewW - drawW) / 2, y + (previewH - drawH) / 2, drawW, drawH);
+        octx.restore();
+      }
+
+      const startY = heroHeight;
+      state.palette.forEach((item, index) => {
+        const col = index % columns;
+        const row = Math.floor(index / columns);
+        const x = 48 + col * (cardWidth + 20);
+        const y = startY + row * (cardHeight + 20);
+
+        octx.fillStyle = "#ffffff";
+        roundRect(octx, x, y, cardWidth, cardHeight, 20);
+        octx.fill();
+        octx.strokeStyle = "#e5e1d8";
+        octx.lineWidth = 2;
+        roundRect(octx, x, y, cardWidth, cardHeight, 20);
+        octx.stroke();
+
+        octx.fillStyle = item.hex;
+        roundRect(octx, x + 16, y + 16, cardWidth - 32, 72, 16);
+        octx.fill();
+
+        octx.fillStyle = "#1a1a2e";
+        octx.font = "700 24px 'DM Sans', sans-serif";
+        octx.fillText(item.hex, x + 16, y + 122);
+        octx.fillStyle = "#6b7280";
+        octx.font = "400 18px 'DM Sans', sans-serif";
+        octx.fillText(`rgb(${item.rgb.join(", ")})`, x + 16, y + 146);
+        if (item.weight != null) {
+          octx.fillStyle = "#c1440e";
+          octx.font = "700 17px 'DM Sans', sans-serif";
+          octx.fillText(`${item.weight}%`, x + cardWidth - 54, y + 146);
+        }
+      });
+
+      out.toBlob(blob => {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${state.name}-palette.png`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 30000);
+      }, "image/png");
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    dropzone.addEventListener("dragover", event => {
+      event.preventDefault();
+      dropzone.classList.add("dragover");
+    });
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+    dropzone.addEventListener("drop", event => {
+      event.preventDefault();
+      dropzone.classList.remove("dragover");
+      loadFile(event.dataTransfer.files[0]);
+    });
+    input.addEventListener("change", event => loadFile(event.target.files[0]));
+
+    canvas.addEventListener("pointerdown", event => {
+      if (!state.image) return;
+      const pos = pointerPosition(event);
+      if (state.mode === "picker") {
+        pickColorAt(pos);
+        return;
+      }
+      state.dragging = true;
+      state.startX = pos.x;
+      state.startY = pos.y;
+      state.crop = { x: pos.x, y: pos.y, w: 0, h: 0 };
+      drawSelection();
+    });
+
+    canvas.addEventListener("pointermove", event => {
+      if (!state.image) return;
+      const pos = pointerPosition(event);
+      if (state.mode === "picker") {
+        pickColorAt(pos);
+        return;
+      }
+      if (!state.dragging) return;
+      const x = Math.min(state.startX, pos.x);
+      const y = Math.min(state.startY, pos.y);
+      const w = Math.abs(pos.x - state.startX);
+      const h = Math.abs(pos.y - state.startY);
+      state.crop = { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h) };
+      drawSelection();
+    });
+
+    canvas.addEventListener("pointerleave", () => {
+      if (state.mode === "picker") hideLoupe();
+    });
+
+    window.addEventListener("pointerup", () => {
+      if (!state.dragging) return;
+      state.dragging = false;
+      if (state.crop && (state.crop.w < 4 || state.crop.h < 4)) resetCrop();
+      drawSelection();
+    });
+
+    document.getElementById("download-converted").addEventListener("click", () => downloadCanvas(canvas, null, "converted"));
+    document.getElementById("download-crop").addEventListener("click", () => {
+      if (!state.crop) return;
+      downloadCanvas(canvas, state.crop, "crop");
+    });
+    document.getElementById("reset-crop").addEventListener("click", resetCrop);
+    document.getElementById("extract-palette").addEventListener("click", extractPalette);
+    document.getElementById("copy-palette-css").addEventListener("click", copyPaletteAsCss);
+    document.getElementById("download-palette-image").addEventListener("click", downloadPaletteImage);
+    document.getElementById("clear-palette").addEventListener("click", () => {
+      state.palette = [];
+      renderPalette();
+    });
+    document.getElementById("mode-crop").addEventListener("click", () => setMode("crop"));
+    document.getElementById("mode-picker").addEventListener("click", () => setMode("picker"));
+    document.getElementById("add-picked-color").addEventListener("click", () => addColorToPalette(state.pickedColor || state.activeColor));
+    document.getElementById("sat-range").addEventListener("input", event => {
+      state.wheelSat = +event.target.value;
+      drawColorWheel();
+    });
+    document.getElementById("light-range").addEventListener("input", event => {
+      state.wheelLight = +event.target.value;
+      drawColorWheel();
+    });
+    document.getElementById("add-wheel-color").addEventListener("click", () => {
+      const rgb = hslToRgb(state.wheelHue, state.wheelSat, state.wheelLight);
+      addColorToPalette({
+        hex: rgbToHex(rgb[0], rgb[1], rgb[2]),
+        rgb,
+        hsl: rgbToHsl(rgb[0], rgb[1], rgb[2]),
+        source: "Roue chromatique",
+        coords: "-",
+        label: `hsl(${state.wheelHue}, ${state.wheelSat}%, ${state.wheelLight}%)`
+      });
+    });
+    wheelCanvas.addEventListener("pointerdown", updateWheelFromPointer);
+    document.getElementById("clear-image").addEventListener("click", () => {
+      state.image = null;
+      state.crop = null;
+      state.pickedColor = null;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      canvas.width = 0;
+      canvas.height = 0;
+      paletteEl.innerHTML = "";
+      imageMeta.innerHTML = "<strong>Aucune image chargee</strong><div class='meta'>Les dimensions et le format apparaitront ici.</div>";
+      drawSelection();
+      hideLoupe();
+    });
+
+    drawColorWheel();
+    renderPalette();
+    setMode("crop");
+  </script>
+</body>
+</html>

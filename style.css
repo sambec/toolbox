@@ -93,6 +93,42 @@ nav a {
 }
 nav a:hover { color: var(--clr-ink); border-color: var(--clr-accent); }
 
+/* ── Tool Menu ──────────────────────────────── */
+.tool-menu-section {
+  padding: 1.25rem 2rem 0;
+}
+.tool-menu-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+.tool-menu {
+  display: flex;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+.tool-menu-btn {
+  border: 1.5px solid var(--clr-border);
+  background: var(--clr-surface);
+  color: var(--clr-muted);
+  border-radius: 999px;
+  padding: .6rem 1rem;
+  font-family: var(--font-body);
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition), background var(--transition);
+}
+.tool-menu-btn:hover {
+  border-color: var(--clr-accent);
+  color: var(--clr-ink);
+  background: var(--clr-light);
+}
+.tool-menu-btn.active {
+  border-color: var(--clr-accent);
+  background: var(--clr-accent);
+  color: #fff;
+}
+
 /* ── Hero ──────────────────────────────────── */
 .hero {
   background: var(--clr-surface);
@@ -236,6 +272,7 @@ nav a:hover { color: var(--clr-ink); border-color: var(--clr-accent); }
   flex-direction: column;
   gap: .75rem;
 }
+.tool-card.hidden { display: none; }
 .tool-card::after {
   content: '';
   position: absolute;
@@ -305,6 +342,8 @@ nav a:hover { color: var(--clr-ink); border-color: var(--clr-accent); }
 .cat-secure    .tool-tag  { background: #f0fdf4; color: #15803d; }
 .cat-edit      .tool-icon { background: #fdf0eb; }
 .cat-edit      .tool-tag  { background: #fdf0eb; color: #c1440e; }
+.cat-optimize  .tool-icon { background: #ecfdf5; }
+.cat-optimize  .tool-tag  { background: #ecfdf5; color: #047857; }
 .cat-new       .tool-icon { background: #fce7f3; }
 .cat-new       .tool-tag  { background: #fce7f3; color: #be185d; border: 1px dashed #be185d; }
 
@@ -589,6 +628,7 @@ footer strong { color: #fff; }
   nav { gap: 1rem; }
   nav a { font-size: .8rem; }
   .hero { padding: 3rem 1rem 2.5rem; }
+  .tool-menu-section { padding: 1rem 1rem 0; }
   .tools-section { padding: 2.5rem 1rem; }
   .tools-grid { grid-template-columns: 1fr; }
   .options-grid { grid-template-columns: 1fr; }

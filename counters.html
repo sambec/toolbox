@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compteurs & Convertisseurs</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    :root {
+      --bg: var(--tb-bg);
+      --surface: var(--tb-surface);
+      --ink: var(--tb-ink);
+      --muted: var(--tb-muted);
+      --accent: var(--tb-accent);
+      --accent-2: var(--tb-accent-2);
+      --line: var(--tb-border);
+      --soft: var(--tb-light);
+      --success: var(--tb-success);
+      --radius: 18px;
+      --shadow: var(--tb-shadow-md);
+      --font-display: var(--tb-font-display);
+      --font-body: var(--tb-font-body);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(234, 88, 12, 0.08), transparent 30%),
+        linear-gradient(180deg, #fffaf4 0%, var(--bg) 100%);
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      background: var(--soft);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+    }
+
+    h1 {
+      margin-top: 18px;
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      line-height: 1.05;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin-top: 14px;
+      font-size: 1.02rem;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 22px;
+    }
+
+    .nav a {
+      text-decoration: none;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 10px 14px;
+      background: #fff;
+      font-size: 0.95rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 22px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 22px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+
+    .card-header p,
+    .hint,
+    .formula p,
+    .result-note,
+    .list li {
+      color: var(--muted);
+    }
+
+    .subgrid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      padding: 12px 14px;
+      color: var(--ink);
+    }
+
+    textarea { min-height: 132px; resize: vertical; }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    .primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+    }
+    .secondary {
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    .result {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .result strong {
+      display: block;
+      font-size: 1.35rem;
+      margin-bottom: 4px;
+    }
+
+    .pill-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .pill {
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: var(--soft);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+
+    .formula {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px dashed #d6c2a8;
+    }
+
+    .formula code {
+      display: block;
+      margin-top: 8px;
+      padding: 10px 12px;
+      background: #fff7ef;
+      border-radius: 10px;
+      color: #9a3412;
+      overflow-x: auto;
+    }
+
+    .formula ul {
+      padding-left: 18px;
+      margin: 12px 0 0;
+    }
+
+    .list {
+      margin: 14px 0 0;
+      padding-left: 18px;
+      line-height: 1.7;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.95rem;
+    }
+
+    .table th,
+    .table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .good {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    @media (max-width: 900px) {
+      .grid,
+      .subgrid {
+        grid-template-columns: 1fr;
+      }
+
+      .shell {
+        width: min(100% - 20px, 1180px);
+      }
+    }
+  </style>
+</head>
+<body class="toolbox-page">
+  <header class="toolbox-topbar">
+    <div class="toolbox-topbar-inner">
+      <a href="main.html" class="toolbox-brand">
+        <span class="toolbox-brand-mark">♥</span>
+        My <em>little</em> toolbox
+      </a>
+      <nav class="toolbox-nav">
+        <a href="main.html">Accueil</a>
+        <a href="index.html">PDF</a>
+        <a href="counters.html" class="active">Compteurs</a>
+        <a href="markdown-studio.html">Markdown</a>
+        <a href="image-lab.html">Images</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="shell toolbox-shell">
+    <section class="hero toolbox-hero">
+      <span class="eyebrow toolbox-eyebrow">Compteurs utiles</span>
+      <h1>Temps, conversions et tailles de fichiers</h1>
+      <p class="lead">Une mini toolbox pour calculer des durees, additionner des heures, convertir des unites du quotidien et expliquer clairement les conversions de stockage entre Go, To, Gb et Mb.</p>
+      <nav class="nav toolbox-linkbar">
+        <a href="#time-card">Calculateur de temps</a>
+        <a href="#units-card">Convertisseur d'unites</a>
+        <a href="#storage-card">Go / To / Gb / Mb</a>
+        <a href="index.html">Retour PDF</a>
+      </nav>
+    </section>
+
+    <section class="grid">
+      <div class="stack">
+        <article class="card" id="time-card">
+          <div class="card-header">
+            <div>
+              <h2>Calculateur de temps</h2>
+              <p>Ajouter, soustraire et comparer des horaires. Vous pouvez aussi totaliser plusieurs lignes d'heures.</p>
+            </div>
+          </div>
+
+          <div class="subgrid">
+            <div>
+              <label for="time-operation">Mode</label>
+              <select id="time-operation">
+                <option value="add">Additionner deux durees</option>
+                <option value="subtract">Soustraire une duree</option>
+                <option value="between">Trouver la duree entre deux horaires</option>
+              </select>
+            </div>
+            <div>
+              <label for="time-format">Format d'affichage</label>
+              <select id="time-format">
+                <option value="clock">hh:mm</option>
+                <option value="decimal">heures decimales</option>
+                <option value="minutes">minutes</option>
+              </select>
+            </div>
+            <div>
+              <label for="time-value-a">Valeur A</label>
+              <input id="time-value-a" type="text" value="08:45" placeholder="08:45">
+            </div>
+            <div>
+              <label for="time-value-b">Valeur B</label>
+              <input id="time-value-b" type="text" value="02:30" placeholder="02:30">
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="primary" id="run-time">Calculer</button>
+            <button class="secondary" id="swap-time">Intervertir</button>
+          </div>
+
+          <div class="result" id="time-result">
+            <strong>11:15</strong>
+            <div class="result-note">Exemple: 08:45 + 02:30 = 11:15</div>
+          </div>
+
+          <div class="formula">
+            <h3>Totalisateur d'heures</h3>
+            <p>Collez une liste de durees, une par ligne, au format <code>hh:mm</code> ou <code>1.5h</code>.</p>
+            <textarea id="timesheet-input">01:15
+02:40
+00:35
+1.5h</textarea>
+            <div class="controls">
+              <button class="primary" id="sum-timesheet">Totaliser</button>
+            </div>
+            <div class="result" id="timesheet-result">
+              <strong>05:00</strong>
+              <div class="result-note">Le total apparaitra ici.</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" id="units-card">
+          <div class="card-header">
+            <div>
+              <h2>Convertisseur d'unites</h2>
+              <p>Longueur, poids, temperature et vitesse dans la meme interface.</p>
+            </div>
+          </div>
+
+          <div class="subgrid">
+            <div>
+              <label for="unit-category">Categorie</label>
+              <select id="unit-category">
+                <option value="length">Longueur</option>
+                <option value="weight">Poids</option>
+                <option value="temperature">Temperature</option>
+                <option value="speed">Vitesse</option>
+              </select>
+            </div>
+            <div>
+              <label for="unit-value">Valeur</label>
+              <input id="unit-value" type="number" value="12.5" step="any">
+            </div>
+            <div>
+              <label for="unit-from">De</label>
+              <select id="unit-from"></select>
+            </div>
+            <div>
+              <label for="unit-to">Vers</label>
+              <select id="unit-to"></select>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="primary" id="run-unit">Convertir</button>
+          </div>
+
+          <div class="result" id="unit-result">
+            <strong>12.5 m = 1250 cm</strong>
+            <div class="result-note">Les resultats s'affichent ici.</div>
+          </div>
+        </article>
+      </div>
+
+      <div class="stack">
+        <article class="card" id="storage-card">
+          <div class="card-header">
+            <div>
+              <h2>Go, To, Gb, Mb</h2>
+              <p>Convertir des tailles de stockage et de debit, avec explication des formules.</p>
+            </div>
+          </div>
+
+          <div class="subgrid">
+            <div>
+              <label for="storage-value">Valeur</label>
+              <input id="storage-value" type="number" value="1" step="any">
+            </div>
+            <div>
+              <label for="storage-system">Systeme</label>
+              <select id="storage-system">
+                <option value="decimal">Decimal (1 Go = 1000 Mo)</option>
+                <option value="binary">Binaire (1 Gio = 1024 Mio)</option>
+              </select>
+            </div>
+            <div>
+              <label for="storage-from">De</label>
+              <select id="storage-from">
+                <option value="TB">To / TB</option>
+                <option value="GB" selected>Go / GB</option>
+                <option value="MB">Mo / MB</option>
+                <option value="Kb">Kb</option>
+                <option value="Mb">Mb</option>
+                <option value="Gb">Gb</option>
+                <option value="bits">bits</option>
+                <option value="bytes">octets</option>
+              </select>
+            </div>
+            <div>
+              <label for="storage-to">Vers</label>
+              <select id="storage-to">
+                <option value="TB">To / TB</option>
+                <option value="GB">Go / GB</option>
+                <option value="MB" selected>Mo / MB</option>
+                <option value="Kb">Kb</option>
+                <option value="Mb">Mb</option>
+                <option value="Gb">Gb</option>
+                <option value="bits">bits</option>
+                <option value="bytes">octets</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="primary" id="run-storage">Convertir</button>
+          </div>
+
+          <div class="result" id="storage-result">
+            <strong>1 Go = 1000 Mo</strong>
+            <div class="result-note">Choisissez une valeur et un systeme decimal ou binaire.</div>
+          </div>
+
+          <div class="formula" id="storage-formula">
+            <h3>Pourquoi ?</h3>
+            <p>Les tailles de fichiers et les debits ne parlent pas toujours de la meme chose.</p>
+            <code>1 octet = 8 bits</code>
+            <ul>
+              <li><strong>Go, To, Mo</strong> servent souvent pour le stockage.</li>
+              <li><strong>Gb, Mb</strong> servent souvent pour les debits reseau.</li>
+              <li><strong>GB vers Gb</strong> multiplie par 8, car on passe d'octets a bits.</li>
+              <li><strong>Decimal</strong>: 1 Go = 1000 Mo.</li>
+              <li><strong>Binaire</strong>: 1 Gio = 1024 Mio.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <div>
+              <h2>Exemples utiles</h2>
+              <p>Quelques equivalences que l'on cherche souvent.</p>
+            </div>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Question</th>
+                <th>Reponse rapide</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1 Go en Mb</td>
+                <td>8000 Mb <span class="muted">(decimal)</span></td>
+              </tr>
+              <tr>
+                <td>1 To en Go</td>
+                <td>1000 Go <span class="muted">(decimal)</span></td>
+              </tr>
+              <tr>
+                <td>1 Gb/s en Mo/s</td>
+                <td>125 Mo/s</td>
+              </tr>
+              <tr>
+                <td>90 minutes</td>
+                <td>01:30</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <ul class="list">
+            <li>Quand on telecharge a <strong>1 Gb/s</strong>, on parle generalement de <strong>gigabits par seconde</strong>.</li>
+            <li>Quand un disque est vendu avec <strong>1 To</strong>, on parle generalement de <strong>teraoctets decimaux</strong>.</li>
+            <li>Le calculateur de temps accepte aussi des formats comme <strong>1.5h</strong>.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const unitConfig = {
+      length: {
+        base: "m",
+        units: { mm: 0.001, cm: 0.01, m: 1, km: 1000, in: 0.0254, ft: 0.3048 }
+      },
+      weight: {
+        base: "g",
+        units: { mg: 0.001, g: 1, kg: 1000, lb: 453.59237, oz: 28.349523125 }
+      },
+      speed: {
+        base: "m/s",
+        units: { "m/s": 1, "km/h": 0.2777777778, mph: 0.44704 }
+      }
+    };
+
+    function parseDuration(value) {
+      const raw = value.trim().toLowerCase();
+      if (!raw) return NaN;
+      if (raw.includes(":")) {
+        const parts = raw.split(":").map(Number);
+        if (parts.some(Number.isNaN)) return NaN;
+        if (parts.length === 2) return parts[0] * 60 + parts[1];
+        if (parts.length === 3) return parts[0] * 60 + parts[1] + parts[2] / 60;
+      }
+      if (raw.endsWith("h")) return parseFloat(raw) * 60;
+      if (raw.endsWith("m")) return parseFloat(raw);
+      return parseFloat(raw);
+    }
+
+    function formatClock(totalMinutes) {
+      const sign = totalMinutes < 0 ? "-" : "";
+      const abs = Math.abs(totalMinutes);
+      const hours = Math.floor(abs / 60);
+      const minutes = Math.round(abs % 60);
+      return `${sign}${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    }
+
+    function formatDuration(totalMinutes, mode) {
+      if (mode === "minutes") return `${roundSmart(totalMinutes)} minutes`;
+      if (mode === "decimal") return `${roundSmart(totalMinutes / 60)} h`;
+      return formatClock(totalMinutes);
+    }
+
+    function roundSmart(value) {
+      return Number(value.toFixed(4)).toString();
+    }
+
+    function runTimeCalculation() {
+      const mode = document.getElementById("time-operation").value;
+      const display = document.getElementById("time-format").value;
+      const a = parseDuration(document.getElementById("time-value-a").value);
+      const b = parseDuration(document.getElementById("time-value-b").value);
+      const result = document.getElementById("time-result");
+
+      if (Number.isNaN(a) || Number.isNaN(b)) {
+        result.innerHTML = "<strong>Entree invalide</strong><div class='result-note'>Utilisez par exemple 08:45, 90, 1.5h ou 30m.</div>";
+        return;
+      }
+
+      let total = 0;
+      let note = "";
+      if (mode === "add") {
+        total = a + b;
+        note = `${formatClock(a)} + ${formatClock(b)} = ${formatDuration(total, display)}`;
+      } else if (mode === "subtract") {
+        total = a - b;
+        note = `${formatClock(a)} - ${formatClock(b)} = ${formatDuration(total, display)}`;
+      } else {
+        total = b - a;
+        if (total < 0) total += 24 * 60;
+        note = `Entre ${formatClock(a)} et ${formatClock(b)}: ${formatDuration(total, display)}`;
+      }
+
+      result.innerHTML = `<strong>${formatDuration(total, display)}</strong><div class="result-note">${note}</div>`;
+    }
+
+    function sumTimesheet() {
+      const lines = document.getElementById("timesheet-input").value.split("\n").map(line => line.trim()).filter(Boolean);
+      const values = lines.map(parseDuration);
+      const result = document.getElementById("timesheet-result");
+      if (values.some(Number.isNaN)) {
+        result.innerHTML = "<strong>Erreur</strong><div class='result-note'>Une ou plusieurs lignes ne sont pas reconnues.</div>";
+        return;
+      }
+      const total = values.reduce((sum, value) => sum + value, 0);
+      result.innerHTML = `<strong>${formatClock(total)}</strong><div class="result-note">${roundSmart(total / 60)} heures decimales, soit ${roundSmart(total)} minutes.</div>`;
+    }
+
+    function populateUnits() {
+      const category = document.getElementById("unit-category").value;
+      const from = document.getElementById("unit-from");
+      const to = document.getElementById("unit-to");
+      from.innerHTML = "";
+      to.innerHTML = "";
+
+      const units = category === "temperature"
+        ? ["C", "F", "K"]
+        : Object.keys(unitConfig[category].units);
+
+      units.forEach(unit => {
+        from.add(new Option(unit, unit));
+        to.add(new Option(unit, unit));
+      });
+
+      to.selectedIndex = Math.min(1, units.length - 1);
+    }
+
+    function convertTemperature(value, from, to) {
+      let celsius = value;
+      if (from === "F") celsius = (value - 32) * 5 / 9;
+      if (from === "K") celsius = value - 273.15;
+      if (to === "C") return celsius;
+      if (to === "F") return celsius * 9 / 5 + 32;
+      return celsius + 273.15;
+    }
+
+    function runUnitConversion() {
+      const category = document.getElementById("unit-category").value;
+      const value = parseFloat(document.getElementById("unit-value").value);
+      const from = document.getElementById("unit-from").value;
+      const to = document.getElementById("unit-to").value;
+      const result = document.getElementById("unit-result");
+
+      if (Number.isNaN(value)) {
+        result.innerHTML = "<strong>Valeur invalide</strong><div class='result-note'>Saisissez un nombre.</div>";
+        return;
+      }
+
+      let converted = 0;
+      let note = "";
+      if (category === "temperature") {
+        converted = convertTemperature(value, from, to);
+        note = "La temperature ne suit pas une simple multiplication: il faut aussi gerer le decalage des echelles.";
+      } else {
+        const config = unitConfig[category];
+        const inBase = value * config.units[from];
+        converted = inBase / config.units[to];
+        note = `Conversion via l'unite de base ${config.base}.`;
+      }
+
+      result.innerHTML = `<strong>${roundSmart(value)} ${from} = ${roundSmart(converted)} ${to}</strong><div class="result-note">${note}</div>`;
+    }
+
+    function storageFactor(unit, system) {
+      const thousand = system === "decimal" ? 1000 : 1024;
+      const map = {
+        TB: thousand ** 4,
+        GB: thousand ** 3,
+        MB: thousand ** 2,
+        bytes: 1,
+        bits: 1 / 8,
+        Gb: (thousand ** 3) / 8,
+        Mb: (thousand ** 2) / 8,
+        Kb: thousand / 8
+      };
+      return map[unit];
+    }
+
+    function runStorageConversion() {
+      const value = parseFloat(document.getElementById("storage-value").value);
+      const from = document.getElementById("storage-from").value;
+      const to = document.getElementById("storage-to").value;
+      const system = document.getElementById("storage-system").value;
+      const result = document.getElementById("storage-result");
+      const formula = document.getElementById("storage-formula");
+
+      if (Number.isNaN(value)) {
+        result.innerHTML = "<strong>Valeur invalide</strong><div class='result-note'>Saisissez un nombre.</div>";
+        return;
+      }
+
+      const bytes = value * storageFactor(from, system);
+      const converted = bytes / storageFactor(to, system);
+      const thousand = system === "decimal" ? 1000 : 1024;
+      const familyName = system === "decimal" ? "decimal" : "binaire";
+      const goToMo = system === "decimal" ? "1 Go = 1000 Mo" : "1 Gio = 1024 Mio";
+      const gbExplain = from.endsWith("b") || to.endsWith("b")
+        ? "On passe aussi entre bits et octets: il faut donc multiplier ou diviser par 8."
+        : "On reste dans la famille des octets, sans conversion bits/octets supplementaire.";
+
+      result.innerHTML = `<strong>${roundSmart(value)} ${from} = ${roundSmart(converted)} ${to}</strong><div class="result-note">Systeme ${familyName}, base ${thousand}.</div>`;
+      formula.innerHTML = `
+        <h3>Pourquoi ?</h3>
+        <p>Voici la logique appliquee pour cette conversion.</p>
+        <code>${roundSmart(value)} ${from} -> octets -> ${roundSmart(converted)} ${to}</code>
+        <ul>
+          <li><strong>Etape 1</strong>: convertir l'unite de depart en octets.</li>
+          <li><strong>Etape 2</strong>: convertir ces octets vers l'unite cible.</li>
+          <li><strong>Base</strong>: ${goToMo} dans le systeme ${familyName}.</li>
+          <li><strong>Bits vs octets</strong>: ${gbExplain}</li>
+        </ul>
+      `;
+    }
+
+    document.getElementById("run-time").addEventListener("click", runTimeCalculation);
+    document.getElementById("swap-time").addEventListener("click", () => {
+      const a = document.getElementById("time-value-a");
+      const b = document.getElementById("time-value-b");
+      [a.value, b.value] = [b.value, a.value];
+      runTimeCalculation();
+    });
+    document.getElementById("sum-timesheet").addEventListener("click", sumTimesheet);
+    document.getElementById("unit-category").addEventListener("change", populateUnits);
+    document.getElementById("run-unit").addEventListener("click", runUnitConversion);
+    document.getElementById("run-storage").addEventListener("click", runStorageConversion);
+
+    populateUnits();
+    runTimeCalculation();
+    sumTimesheet();
+    runUnitConversion();
+    runStorageConversion();
+  </script>
+</body>
+</html>
