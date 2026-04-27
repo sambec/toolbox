@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Studio</title>
+  <link rel="stylesheet" href="../static/common.css">
+  <style>
+    :root {
+      --bg: var(--tb-bg, #f8fffe);
+      --surface: var(--tb-surface, #ffffff);
+      --ink: var(--tb-ink, #0f1c1a);
+      --muted: var(--tb-muted, #6b7f7c);
+      --accent: var(--tb-accent, #0d9488);
+      --accent-2: var(--tb-accent-2, #14b8a6);
+      --line: var(--tb-border, #e2eceb);
+      --soft: var(--tb-light, #f0fdf9);
+      --shadow: var(--tb-shadow-md, 0 4px 24px rgba(0,0,0,.07));
+      --font-display: var(--tb-font-display, "DM Serif Display", Georgia, serif);
+      --font-body: var(--tb-font-body, "DM Sans", system-ui, sans-serif);
+      --font-mono: "SFMono-Regular", "Menlo", monospace;
+      --sidebar-w: 260px;
+      --preview-font: Georgia, serif;
+      --preview-size: 16px;
+      --preview-line: 1.7;
+      --preview-width: 100%;
+      --preview-accent: #0d9488;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); font-family: var(--font-body); }
+
+    /* ══ FULL-HEIGHT LAYOUT ══ */
+    .app-body {
+      display: flex;
+      height: calc(100vh - 56px); /* minus topbar */
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top right, rgba(20,184,166,.1), transparent 28%),
+        var(--bg);
+    }
+
+    /* ══ LEFT SIDEBAR ══ */
+    .left-sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      transition: width .26s cubic-bezier(.4,0,.2,1);
+      overflow: hidden;
+      position: relative;
+    }
+    .left-sidebar.collapsed { width: 44px; }
+
+    /* toggle arrow */
+    .sidebar-toggle {
+      position: absolute;
+      top: 12px;
+      right: 8px;
+      width: 26px; height: 26px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface);
+      color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      z-index: 5;
+      transition: color .15s, background .15s;
+      flex-shrink: 0;
+    }
+    .sidebar-toggle svg { transition: transform .26s; }
+    .left-sidebar.collapsed .sidebar-toggle svg { transform: rotate(180deg); }
+    .sidebar-toggle:hover { color: var(--accent); background: var(--soft); }
+
+    /* collapsed icon strip */
+    .sidebar-icons {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 48px;
+      gap: 8px;
+    }
+    .left-sidebar.collapsed .sidebar-icons { display: flex; }
+    .sidebar-icon {
+      width: 30px; height: 30px;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .95rem;
+      cursor: pointer;
+      transition: background .14s, color .14s;
+    }
+    .sidebar-icon:hover { background: var(--soft); color: var(--accent); }
+
+    .sidebar-inner {
+      flex: 1;
+      overflow-y: auto;
+      padding-top: 46px;
+      scrollbar-width: thin;
+    }
+    .left-sidebar.collapsed .sidebar-inner { visibility: hidden; }
+
+    /* accordion */
+    .sb-section { border-bottom: 1px solid var(--line); }
+    .sb-header {
+      display: flex; align-items: center; gap: 7px;
+      padding: 10px 13px;
+      font-size: .78rem; font-weight: 700; color: var(--ink);
+      cursor: pointer; user-select: none;
+      background: none; border: none; width: 100%; text-align: left;
+      transition: background .14s;
+    }
+    .sb-header:hover { background: var(--soft); }
+    .sb-header .sb-ico { font-size: .95rem; flex-shrink: 0; }
+    .sb-header .sb-chevron { margin-left: auto; font-size: .6rem; color: var(--muted); transition: transform .2s; }
+    .sb-section.open .sb-chevron { transform: rotate(180deg); }
+    .sb-body { display: none; flex-direction: column; gap: 11px; padding: 2px 13px 13px; }
+    .sb-section.open .sb-body { display: flex; }
+
+    /* fields */
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-size: .68rem; font-weight: 700; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+    .field select,
+    .field input[type="text"] {
+      border: 1px solid var(--line); border-radius: 8px;
+      padding: 6px 8px; font: .81rem var(--font-body);
+      color: var(--ink); background: var(--bg);
+      outline: none; transition: border-color .14s; width: 100%;
+    }
+    .field select:focus, .field input:focus { border-color: var(--accent); }
+    .field input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .field input[type="color"] {
+      width: 100%; height: 30px; border: 1px solid var(--line);
+      border-radius: 7px; padding: 2px 3px; cursor: pointer; background: var(--bg);
+    }
+    .range-row { display: flex; align-items: center; gap: 7px; }
+    .range-row input { flex: 1; }
+    .range-val { font-size: .75rem; font-weight: 700; color: var(--accent); width: 34px; text-align: right; flex-shrink: 0; }
+
+    /* export buttons */
+    .export-btns { display: flex; flex-direction: column; gap: 5px; }
+    .export-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px;
+      background: var(--bg); font: 600 .78rem var(--font-body);
+      color: var(--ink); cursor: pointer; transition: all .15s; text-align: left; width: 100%;
+    }
+    .export-btn:hover { background: var(--soft); border-color: var(--accent); color: var(--accent); }
+    .export-btn .ico { font-size: 1.05rem; }
+    .export-btn .meta { font-size: .65rem; color: var(--muted); font-weight: 400; }
+
+    /* ══ MAIN AREA ══ */
+    .main-area {
+      flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden;
+    }
+
+    /* hero strip */
+    .hero-strip {
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      padding: 14px 18px 11px;
+      flex-shrink: 0;
+    }
+    .hero-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+    }
+    .hero-left { display: flex; align-items: center; gap: 10px; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 11px; border-radius: 999px; background: var(--soft);
+      color: var(--accent); font-size: 10px; font-weight: 800;
+      letter-spacing: .1em; text-transform: uppercase; white-space: nowrap;
+    }
+    .hero-title {
+      margin: 0; font-family: var(--font-display);
+      font-size: clamp(1.1rem, 2vw, 1.55rem); line-height: 1.1; letter-spacing: -.02em;
+    }
+
+    /* view switcher */
+    .view-switcher {
+      display: flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; flex-shrink: 0;
+    }
+    .view-btn {
+      padding: 6px 13px; border: none; border-right: 1px solid var(--line);
+      background: var(--surface); color: var(--muted);
+      font: 600 .76rem var(--font-body); cursor: pointer;
+      display: flex; align-items: center; gap: 5px;
+      transition: background .14s, color .14s; white-space: nowrap;
+    }
+    .view-btn:last-child { border-right: none; }
+    .view-btn:hover { background: var(--soft); color: var(--ink); }
+    .view-btn.active { background: var(--accent); color: #fff; }
+
+    /* toolbar */
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-top: 10px;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      border-radius: 999px; padding: 5px 11px;
+      border: 1px solid var(--line); background: var(--surface);
+      color: var(--ink); font: 600 .76rem/1 var(--font-body);
+      cursor: pointer; transition: all .15s; white-space: nowrap;
+    }
+    .btn:hover { background: var(--soft); border-color: var(--accent); color: var(--accent); }
+    .toolbar-sep { width: 1px; height: 20px; background: var(--line); margin: 0 2px; }
+
+    /* ══ WORKSPACE ══ */
+    .workspace {
+      flex: 1; display: grid; min-height: 0; overflow: hidden;
+      grid-template-columns: 1fr 1fr;
+    }
+    .workspace.mode-write  { grid-template-columns: 1fr 0px; }
+    .workspace.mode-read   { grid-template-columns: 0px 1fr; }
+    .workspace.mode-split  { grid-template-columns: 1fr 1fr; }
+    .workspace.mode-write  .pane-preview { display: none; }
+    .workspace.mode-read   .pane-editor  { display: none; }
+
+    /* panes */
+    .pane {
+      display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+    }
+    .pane + .pane { border-left: 1px solid var(--line); }
+
+    .pane-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 15px; border-bottom: 1px solid var(--line);
+      background: var(--surface); flex-shrink: 0; gap: 8px;
+    }
+    .pane-title {
+      font-size: .8rem; font-weight: 700;
+      display: flex; align-items: center; gap: 6px; margin: 0;
+    }
+    .pane-sub { font-size: .7rem; color: var(--muted); }
+
+    /* format bar */
+    .format-bar {
+      display: flex; flex-wrap: wrap; gap: 2px;
+      padding: 6px 11px; border-bottom: 1px solid var(--line);
+      background: #fafffe; flex-shrink: 0;
+    }
+    .fmt-btn {
+      border: none; background: transparent; color: var(--muted);
+      padding: 3px 7px; border-radius: 5px; cursor: pointer;
+      font-size: .77rem; font-family: var(--font-mono); font-weight: 700;
+      transition: background .13s, color .13s; line-height: 1;
+    }
+    .fmt-btn:hover { background: var(--soft); color: var(--accent); }
+    .fmt-sep { width: 1px; height: 16px; background: var(--line); margin: 0 2px; align-self: center; }
+
+    /* editor scroll */
+    .pane-scroll {
+      flex: 1; overflow: auto; padding: 12px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+
+    textarea {
+      width: 100%; flex: 1; min-height: 200px;
+      border: 1px solid var(--line); border-radius: 11px;
+      background: #fcfdff; color: var(--ink);
+      padding: 14px; resize: none;
+      font: 0.89rem/1.7 var(--font-mono);
+      outline: none; transition: border-color .15s;
+    }
+    textarea:focus { border-color: var(--accent); }
+
+    /* stats */
+    .stats {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; flex-shrink: 0;
+    }
+    .stat {
+      border: 1px solid var(--line); border-radius: 9px;
+      padding: 7px 9px; background: #f8fffe; text-align: center;
+    }
+    .stat strong { display: block; font-size: .95rem; color: var(--accent); font-weight: 800; margin-bottom: 1px; }
+    .stat span { font-size: .62rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+
+    /* preview */
+    .preview-scroll {
+      flex: 1; overflow: auto; padding: 22px;
+      line-height: var(--preview-line);
+      font-family: var(--preview-font);
+      font-size: var(--preview-size);
+    }
+    .preview-scroll > * { max-width: var(--preview-width); }
+    #preview h1, #preview h2, #preview h3 { font-family: var(--font-display); margin: 0 0 10px; color: var(--ink); }
+    #preview h1 { font-size: 2rem; border-bottom: 2px solid var(--line); padding-bottom: 8px; margin-bottom: 16px; }
+    #preview h2 { font-size: 1.4rem; margin-top: 26px; }
+    #preview h3 { font-size: 1.1rem; margin-top: 20px; }
+    #preview p { margin: 0 0 12px; }
+    #preview ul, #preview ol { padding-left: 22px; margin-bottom: 12px; }
+    #preview li { margin-bottom: 3px; }
+    #preview blockquote {
+      margin: 14px 0; padding: 11px 17px;
+      border-left: 4px solid var(--preview-accent);
+      background: color-mix(in srgb, var(--preview-accent) 7%, transparent);
+      border-radius: 0 10px 10px 0;
+      color: color-mix(in srgb, var(--preview-accent) 60%, #000);
+    }
+    #preview code { font-family: var(--font-mono); background: #f4f6fb; padding: 2px 6px; border-radius: 5px; font-size: .88em; }
+    #preview pre { background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: 11px; overflow: auto; margin: 14px 0; }
+    #preview pre code { background: transparent; padding: 0; color: inherit; }
+    #preview a { color: var(--preview-accent); text-decoration: underline; text-underline-offset: 3px; }
+    #preview hr { border: 0; border-top: 1px solid var(--line); margin: 22px 0; }
+    #preview table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+    #preview th, #preview td { border: 1px solid var(--line); padding: 7px 11px; }
+    #preview th { background: var(--soft); font-weight: 700; }
+    #preview img { max-width: 100%; border-radius: 8px; }
+
+    /* cheatsheet */
+    .cheatsheet {
+      border: 1px dashed var(--line); border-radius: 10px;
+      padding: 10px 13px; background: #fbfffe; flex-shrink: 0;
+    }
+    .cheatsheet summary { font-size: .76rem; font-weight: 700; cursor: pointer; user-select: none; color: var(--muted); }
+    .cheatsheet ul { margin: 8px 0 0; padding-left: 15px; line-height: 1.9; font-size: .74rem; color: var(--muted); }
+
+    /* ══ TOAST ══ */
+    .toast {
+      position: fixed; bottom: 20px; right: 20px;
+      background: var(--ink); color: #fff;
+      padding: 9px 15px; border-radius: 9px;
+      font-size: .8rem; font-weight: 500;
+      box-shadow: 0 6px 22px rgba(0,0,0,.18);
+      transform: translateY(55px); opacity: 0;
+      transition: all .26s ease; z-index: 1000;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #065f46; }
+    .toast.error   { background: #991b1b; }
+
+    /* ══ DARK ══ */
+    html[data-theme="dark"] .app-body {
+      background:
+        radial-gradient(circle at top right, rgba(45,212,191,.14), transparent 28%),
+        var(--bg);
+    }
+    html[data-theme="dark"] textarea,
+    html[data-theme="dark"] .format-bar,
+    html[data-theme="dark"] .stat,
+    html[data-theme="dark"] .export-btn,
+    html[data-theme="dark"] .field select,
+    html[data-theme="dark"] .field input,
+    html[data-theme="dark"] .cheatsheet { background: #161c26; }
+    html[data-theme="dark"] #preview code { background: #242c38; }
+
+    /* ══ RESPONSIVE ══ */
+    @media (max-width: 720px) {
+      .left-sidebar { display: none; }
+      .workspace { grid-template-columns: 1fr !important; }
+      .workspace.mode-write .pane-editor,
+      .workspace.mode-read  .pane-preview { display: flex; }
+    }
+  </style>
+</head>
+<body class="toolbox-page">
+
+  <header class="toolbox-topbar">
+    <div class="toolbox-topbar-inner">
+      <a href="../index.html" class="toolbox-brand">
+        <span class="toolbox-brand-mark">♥</span>
+        My <em>little</em> toolbox
+      </a>
+      <div class="toolbox-topbar-actions">
+        <nav class="toolbox-nav">
+          <a href="../index.html">Home</a>
+          <a href="pdf.html">PDF</a>
+          <a href="counters.html">Counters</a>
+          <a href="markdown-studio.html" class="active">Markdown</a>
+          <a href="image-lab.html">Images</a>
+        </nav>
+        <button type="button" class="toolbox-theme-toggle" data-theme-toggle aria-pressed="false">🌙 Dark mode</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-body">
+
+    <!-- ══ LEFT SIDEBAR ══ -->
+    <aside class="left-sidebar" id="left-sidebar">
+      <button class="sidebar-toggle" id="sidebar-toggle" title="Collapse">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+
+      <!-- collapsed icon strip -->
+      <div class="sidebar-icons">
+        <div class="sidebar-icon" title="Export"       onclick="expandSidebar()">⬇️</div>
+        <div class="sidebar-icon" title="Document"     onclick="expandSidebar()">🏷️</div>
+        <div class="sidebar-icon" title="Customize"    onclick="expandSidebar()">🎨</div>
+      </div>
+
+      <div class="sidebar-inner">
+
+        <!-- Export -->
+        <div class="sb-section open">
+          <button class="sb-header" onclick="toggleSection(this)">
+            <span class="sb-ico">⬇️</span> Export
+            <span class="sb-chevron">▼</span>
+          </button>
+          <div class="sb-body">
+            <div class="export-btns">
+              <button class="export-btn" id="download-word">
+                <span class="ico">📝</span>
+                <div><div>Word (.docx)</div><div class="meta">with styles and pagination</div></div>
+              </button>
+              <button class="export-btn" id="download-markdown">
+                <span class="ico">📄</span>
+                <div><div>Markdown (.md)</div><div class="meta">raw file</div></div>
+              </button>
+              <button class="export-btn" id="download-html">
+                <span class="ico">🌐</span>
+                <div><div>HTML (.html)</div><div class="meta">standalone page</div></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Document -->
+        <div class="sb-section open">
+          <button class="sb-header" onclick="toggleSection(this)">
+            <span class="sb-ico">🏷️</span> Document
+            <span class="sb-chevron">▼</span>
+          </button>
+          <div class="sb-body">
+            <div class="field">
+              <label>File name</label>
+              <input type="text" id="doc-name" value="note" placeholder="note">
+            </div>
+            <div class="field">
+              <label>Author (Word)</label>
+              <input type="text" id="doc-author" placeholder="Your name">
+            </div>
+          </div>
+        </div>
+
+        <!-- Personnalisation -->
+        <div class="sb-section open">
+          <button class="sb-header" onclick="toggleSection(this)">
+            <span class="sb-ico">🎨</span> Preview
+            <span class="sb-chevron">▼</span>
+          </button>
+          <div class="sb-body">
+            <div class="field">
+              <label>Font</label>
+              <select id="pv-font">
+                <option value="Georgia, serif">Georgia (serif)</option>
+                <option value="'Times New Roman', serif">Times New Roman</option>
+                <option value="system-ui, sans-serif" selected>System (sans-serif)</option>
+                <option value="'DM Sans', sans-serif">DM Sans</option>
+                <option value="'Courier New', monospace">Courier New</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Text size</label>
+              <div class="range-row">
+                <input type="range" id="pv-size" min="12" max="22" value="16">
+                <span class="range-val" id="pv-size-val">16px</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Line height</label>
+              <div class="range-row">
+                <input type="range" id="pv-line" min="1.2" max="2.4" value="1.7" step="0.1">
+                <span class="range-val" id="pv-line-val">1.7</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Max width</label>
+              <select id="pv-width">
+                <option value="100%">Full width</option>
+                <option value="720px">Comfortable (720px)</option>
+                <option value="600px">Article (600px)</option>
+                <option value="480px">Narrow (480px)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Accent color</label>
+              <input type="color" id="pv-accent" value="#0d9488">
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /sidebar-inner -->
+    </aside>
+
+    <!-- ══ MAIN AREA ══ -->
+    <div class="main-area">
+
+      <!-- Hero strip -->
+      <div class="hero-strip">
+        <div class="hero-row">
+          <div class="hero-left">
+            <span class="eyebrow">✦ Markdown Studio</span>
+            <h1 class="hero-title">Write &amp; preview</h1>
+          </div>
+
+          <!-- View switcher -->
+          <div class="view-switcher">
+            <button class="view-btn active" id="btn-split" onclick="setMode('split')" title="Les deux panneaux">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="13" y="3" width="8" height="18" rx="1"/></svg>
+              Split
+            </button>
+            <button class="view-btn" id="btn-write" onclick="setMode('write')" title="Editor only">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+              Write
+            </button>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <button class="btn" id="copy-markdown">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy Markdown
+          </button>
+          <button class="btn" id="copy-html">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Copy HTML
+          </button>
+          <div class="toolbar-sep"></div>
+          <button class="btn" id="import-md">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Import .md
+          </button>
+          <input type="file" id="import-file" accept=".md,.txt" style="display:none">
+          <div class="toolbar-sep"></div>
+          <button class="btn" id="clear-editor">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- Workspace -->
+      <div class="workspace mode-split" id="workspace">
+
+        <!-- Éditeur -->
+        <div class="pane pane-editor">
+          <div class="pane-header">
+            <div>
+              <div class="pane-title">✏️ Editor</div>
+              <div class="pane-sub">Markdown live</div>
+            </div>
+          </div>
+          <div class="format-bar">
+            <button class="fmt-btn" title="H1" onclick="wrapText('# ','')">H1</button>
+            <button class="fmt-btn" title="H2" onclick="wrapText('## ','')">H2</button>
+            <button class="fmt-btn" title="H3" onclick="wrapText('### ','')">H3</button>
+            <div class="fmt-sep"></div>
+            <button class="fmt-btn" title="Bold" onclick="wrapText('**','**')"><strong>B</strong></button>
+            <button class="fmt-btn" title="Italic" onclick="wrapText('*','*')"><em>I</em></button>
+            <button class="fmt-btn" title="Strikethrough" onclick="wrapText('~~','~~')"><del>S</del></button>
+            <button class="fmt-btn" title="Code" onclick="wrapText('`','`')">`c`</button>
+            <div class="fmt-sep"></div>
+            <button class="fmt-btn" title="List" onclick="insertListItem('- ')">• —</button>
+            <button class="fmt-btn" title="Numbered list" onclick="insertListItem('1. ')">1.</button>
+            <button class="fmt-btn" title="Quote" onclick="wrapText('> ','')">❝</button>
+            <div class="fmt-sep"></div>
+            <button class="fmt-btn" title="Link" onclick="insertLink()">[url]</button>
+            <button class="fmt-btn" title="Divider" onclick="insertText('\n---\n')">—</button>
+            <button class="fmt-btn" title="Code block" onclick="insertCodeBlock()">```</button>
+          </div>
+          <div class="pane-scroll">
+            <textarea id="markdown-input"># Hello Markdown
+
+Write here using **bold**, *italic*, or `code`.
+
+## Features
+
+- Live preview
+- Word, HTML, and Markdown export
+- Customization in the left panel (collapsible ←)
+
+> A quote can be useful too.
+
+### Code block
+
+```js
+const message = "hello";
+console.log(message);
+```
+
+[Useful link](https://example.com)
+
+---
+
+Enjoy the studio 🎉</textarea>
+            <div class="stats">
+              <div class="stat"><strong id="char-count">0</strong><span>Characters</span></div>
+              <div class="stat"><strong id="word-count">0</strong><span>Words</span></div>
+              <div class="stat"><strong id="line-count">0</strong><span>Lines</span></div>
+              <div class="stat"><strong id="read-time">0 min</strong><span>Read time</span></div>
+            </div>
+            <details class="cheatsheet">
+              <summary>📖 Markdown cheat sheet</summary>
+              <ul>
+                <li><code># Title</code> — main heading</li>
+                <li><code>## Subtitle</code> — level 2</li>
+                <li><code>**bold**</code> and <code>*italic*</code></li>
+                <li><code>- list</code> or <code>1. numbered</code></li>
+                <li><code>`code`</code> et blocs <code>```</code></li>
+                <li><code>[text](url)</code> — link</li>
+                <li><code>---</code> — divider</li>
+                <li><code>> text</code> — quote</li>
+              </ul>
+            </details>
+          </div>
+        </div>
+
+        <!-- Aperçu -->
+        <div class="pane pane-preview">
+          <div class="pane-header">
+            <div>
+              <div class="pane-title">👁 Preview</div>
+              <div class="pane-sub">Local HTML render</div>
+            </div>
+          </div>
+          <div class="preview-scroll">
+            <div id="preview"></div>
+          </div>
+        </div>
+
+      </div><!-- /workspace -->
+    </div><!-- /main-area -->
+  </div><!-- /app-body -->
+
+  <footer class="toolbox-footer">
+    <strong>My little toolbox</strong> — 100% local tools, no file ever sent to a server.<br>
+    Made with ♥ by <a href="https://sambec.github.io" target="_blank" rel="noreferrer">Sarah Ambec</a>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="../static/theme.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+  <script>
+    /* ══ SIDEBAR ══ */
+    const sidebar = document.getElementById('left-sidebar');
+    document.getElementById('sidebar-toggle').addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+    });
+    function expandSidebar() { sidebar.classList.remove('collapsed'); }
+    function toggleSection(btn) { btn.closest('.sb-section').classList.toggle('open'); }
+
+    /* ══ VIEW MODE ══ */
+    const workspace = document.getElementById('workspace');
+    const editorPane = document.querySelector('.pane-editor');
+    const previewPane = document.querySelector('.pane-preview');
+    function setMode(mode) {
+      const nextMode = ['split', 'write', 'read'].includes(mode) ? mode : 'split';
+      workspace.classList.remove('mode-split', 'mode-write', 'mode-read');
+      workspace.classList.add('mode-' + nextMode);
+      ['split', 'write', 'read'].forEach(m => {
+        const button = document.getElementById('btn-' + m);
+        if (!button) return;
+        button.classList.toggle('active', m === nextMode);
+        button.setAttribute('aria-pressed', String(m === nextMode));
+      });
+      editorPane.hidden = nextMode === 'read';
+      previewPane.hidden = nextMode === 'write';
+      render();
+    }
+
+    /* ══ MARKDOWN → HTML ══ */
+    function escapeHtml(t) {
+      return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+    function applyInline(text) {
+      return escapeHtml(text)
+        .replace(/`([^`]+)`/g,"<code>$1</code>")
+        .replace(/\*\*\*([^*]+)\*\*\*/g,"<strong><em>$1</em></strong>")
+        .replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>")
+        .replace(/\*([^*]+)\*/g,"<em>$1</em>")
+        .replace(/~~([^~]+)~~/g,"<del>$1</del>")
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+    }
+    function markdownToHtml(md) {
+      const lines = md.replace(/\r\n/g,"\n").split("\n");
+      let html="", inUl=false, inOl=false, inCode=false, codeBuf=[], codeLang="", tBuf=[];
+      const cl = () => { if(inUl){html+="</ul>";inUl=false;} if(inOl){html+="</ol>";inOl=false;} };
+      const ft = () => {
+        if(!tBuf.length) return;
+        let out="<table>";
+        tBuf.forEach((row,i)=>{
+          const cells=row.split("|").map(c=>c.trim()).filter((_,j,a)=>j>0&&j<a.length-1);
+          if(i===0) out+="<thead><tr>"+cells.map(c=>`<th>${applyInline(c)}</th>`).join("")+"</tr></thead>";
+          else if(i===1&&cells.every(c=>/^[-:]+$/.test(c))) out+="<tbody>";
+          else out+="<tr>"+cells.map(c=>`<td>${applyInline(c)}</td>`).join("")+"</tr>";
+        });
+        html+=out+"</tbody></table>"; tBuf=[];
+      };
+      lines.forEach(line=>{
+        if(line.trim().startsWith("```")){
+          cl(); ft();
+          if(!inCode){inCode=true;codeBuf=[];codeLang=line.trim().slice(3).trim();}
+          else{html+=`<pre><code>${escapeHtml(codeBuf.join("\n"))}</code></pre>`;inCode=false;}
+          return;
+        }
+        if(inCode){codeBuf.push(line);return;}
+        if(line.trim().startsWith("|")){cl();tBuf.push(line.trim());return;} else ft();
+        if(!line.trim()){cl();return;}
+        const hm=line.match(/^(#{1,6})\s+(.+)/);
+        if(hm){cl();html+=`<h${hm[1].length}>${applyInline(hm[2])}</h${hm[1].length}>`;return;}
+        if(/^>\s?/.test(line)){cl();html+=`<blockquote>${applyInline(line.replace(/^>\s?/,""))}</blockquote>`;return;}
+        if(/^-\s/.test(line)){if(!inUl){cl();html+="<ul>";inUl=true;}html+=`<li>${applyInline(line.replace(/^-\s/,""))}</li>`;return;}
+        if(/^\d+\.\s+/.test(line)){if(!inOl){cl();html+="<ol>";inOl=true;}html+=`<li>${applyInline(line.replace(/^\d+\.\s+/,""))}</li>`;return;}
+        if(/^---+$/.test(line.trim())){cl();html+="<hr>";return;}
+        cl(); html+=`<p>${applyInline(line)}</p>`;
+      });
+      if(inCode) html+=`<pre><code>${escapeHtml(codeBuf.join("\n"))}</code></pre>`;
+      ft(); cl();
+      return html;
+    }
+
+    /* ══ RENDER & STATS ══ */
+    const input = document.getElementById("markdown-input");
+    const preview = document.getElementById("preview");
+    function updateStats(){
+      const t=input.value, words=t.trim()?t.trim().split(/\s+/).length:0;
+      document.getElementById("char-count").textContent=t.length;
+      document.getElementById("word-count").textContent=words;
+      document.getElementById("line-count").textContent=t?t.split("\n").length:0;
+      document.getElementById("read-time").textContent=Math.max(1,Math.ceil(words/200))+" min";
+    }
+    function render(){ preview.innerHTML=markdownToHtml(input.value); updateStats(); }
+    input.addEventListener("input", render);
+
+    /* ══ FORMAT BAR ══ */
+    function wrapText(b,a){
+      const s=input.selectionStart,e=input.selectionEnd,sel=input.value.slice(s,e)||'text';
+      input.setRangeText(b+sel+a,s,e,'end'); input.focus(); render();
+    }
+    function insertListItem(p){
+      const s=input.selectionStart;
+      input.setRangeText('\n'+p,s,s,'end'); input.focus(); render();
+    }
+    function insertLink(){
+      const s=input.selectionStart,e=input.selectionEnd,sel=input.value.slice(s,e)||'text';
+      input.setRangeText(`[${sel}](https://)`,s,e,'end'); input.focus(); render();
+    }
+    function insertCodeBlock(){
+      const s=input.selectionStart,e=input.selectionEnd,sel=input.value.slice(s,e)||'code here';
+      input.setRangeText('\n```js\n'+sel+'\n```\n',s,e,'end'); input.focus(); render();
+    }
+    function insertText(t){
+      const s=input.selectionStart; input.setRangeText(t,s,s,'end'); input.focus(); render();
+    }
+
+    /* ══ CUSTOMIZATION ══ */
+    function applyCustomization(){
+      const r=document.documentElement;
+      r.style.setProperty('--preview-font',document.getElementById('pv-font').value);
+      r.style.setProperty('--preview-size',document.getElementById('pv-size').value+'px');
+      r.style.setProperty('--preview-line',document.getElementById('pv-line').value);
+      r.style.setProperty('--preview-width',document.getElementById('pv-width').value);
+      r.style.setProperty('--preview-accent',document.getElementById('pv-accent').value);
+    }
+    ['pv-font','pv-size','pv-line','pv-width','pv-accent'].forEach(id=>{
+      document.getElementById(id).addEventListener('input',()=>{
+        if(id==='pv-size') document.getElementById('pv-size-val').textContent=document.getElementById(id).value+'px';
+        if(id==='pv-line') document.getElementById('pv-line-val').textContent=document.getElementById(id).value;
+        applyCustomization();
+      });
+    });
+
+    /* ══ TOAST ══ */
+    function showToast(msg,type=''){
+      const t=document.getElementById('toast');
+      t.textContent=msg; t.className='toast show '+type;
+      setTimeout(()=>t.className='toast',2600);
+    }
+
+    /* ══ COPY ══ */
+    document.getElementById("copy-markdown").addEventListener("click",async()=>{ await navigator.clipboard.writeText(input.value); showToast('✓ Markdown copied!','success'); });
+    document.getElementById("copy-html").addEventListener("click",async()=>{ await navigator.clipboard.writeText(preview.innerHTML); showToast('✓ HTML copied!','success'); });
+
+    /* ══ IMPORT ══ */
+    document.getElementById("import-md").addEventListener("click",()=>document.getElementById("import-file").click());
+    document.getElementById("import-file").addEventListener("change",e=>{
+      const file=e.target.files[0]; if(!file) return;
+      const reader=new FileReader();
+      reader.onload=ev=>{ input.value=ev.target.result; render(); showToast('✓ Imported!','success'); };
+      reader.readAsText(file,'utf-8'); e.target.value='';
+    });
+
+    /* ══ DOWNLOAD MARKDOWN ══ */
+    document.getElementById("download-markdown").addEventListener("click",()=>{
+      const name=document.getElementById('doc-name').value||'note';
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(new Blob([input.value],{type:"text/markdown;charset=utf-8"}));
+      a.download=name+".md"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),30000);
+      showToast('✓ Markdown downloaded!','success');
+    });
+
+    /* ══ DOWNLOAD HTML ══ */
+    document.getElementById("download-html").addEventListener("click",()=>{
+      const name=document.getElementById('doc-name').value||'note';
+      const font=document.getElementById('pv-font').value,
+            size=document.getElementById('pv-size').value,
+            line=document.getElementById('pv-line').value,
+            accent=document.getElementById('pv-accent').value;
+      const doc=`<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>${name}</title>
+<style>body{font-family:${font};font-size:${size}px;line-height:${line};max-width:720px;margin:40px auto;padding:0 20px;color:#1a1a1a}h1,h2,h3{font-family:Georgia,serif}h1{border-bottom:2px solid #eee;padding-bottom:8px}blockquote{border-left:4px solid ${accent};margin:16px 0;padding:12px 18px;background:#f9f9f9}code{background:#f4f4f4;padding:2px 6px;border-radius:4px;font-size:.9em}pre{background:#0f172a;color:#e2e8f0;padding:16px;border-radius:10px;overflow:auto}pre code{background:transparent;color:inherit}a{color:${accent}}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px 12px}th{background:#f5f5f5}hr{border:0;border-top:1px solid #eee;margin:24px 0}</style>
+</head><body>${preview.innerHTML}</body></html>`;
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(new Blob([doc],{type:"text/html;charset=utf-8"}));
+      a.download=name+".html"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),30000);
+      showToast('✓ HTML downloaded!','success');
+    });
+
+    /* ══ DOWNLOAD WORD ══ */
+    document.getElementById("download-word").addEventListener("click",async()=>{
+      if(!window.docx){ showToast('⚠ Word library not loaded','error'); return; }
+      const name=document.getElementById('doc-name').value||'note';
+      const author=document.getElementById('doc-author').value||'Author';
+      const accentHex=document.getElementById('pv-accent').value.replace('#','');
+      const {Document,Packer,Paragraph,TextRun,HeadingLevel,AlignmentType,LevelFormat,
+             ExternalHyperlink,BorderStyle,ShadingType,Header,Footer,PageNumber}=window.docx;
+      const lines=input.value.replace(/\r\n/g,'\n').split('\n');
+      const bulletConfig=[
+        {reference:"b",levels:[{level:0,format:LevelFormat.BULLET,text:"•",alignment:AlignmentType.LEFT,style:{paragraph:{indent:{left:720,hanging:360}}}}]},
+        {reference:"n",levels:[{level:0,format:LevelFormat.DECIMAL,text:"%1.",alignment:AlignmentType.LEFT,style:{paragraph:{indent:{left:720,hanging:360}}}}]}
+      ];
+      function pi(text){
+        const runs=[];
+        const rx=/(\*\*\*([^*]+)\*\*\*|\*\*([^*]+)\*\*|\*([^*]+)\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)|([^*`\[]+))/g;
+        let m;
+        while((m=rx.exec(text))!==null){
+          if(m[2]) runs.push(new TextRun({text:m[2],bold:true,italics:true}));
+          else if(m[3]) runs.push(new TextRun({text:m[3],bold:true}));
+          else if(m[4]) runs.push(new TextRun({text:m[4],italics:true}));
+          else if(m[5]) runs.push(new TextRun({text:m[5],font:"Courier New",size:20,shading:{type:ShadingType.CLEAR,fill:"F4F4F4"}}));
+          else if(m[6]) runs.push(new ExternalHyperlink({link:m[7],children:[new TextRun({text:m[6],style:"Hyperlink"})]}));
+          else if(m[8]) runs.push(new TextRun({text:m[8]}));
+        }
+        return runs.length?runs:[new TextRun({text})];
+      }
+      const children=[];
+      let inCode=false,codeBuf=[];
+      const hl=[HeadingLevel.HEADING_1,HeadingLevel.HEADING_2,HeadingLevel.HEADING_3,HeadingLevel.HEADING_4];
+      lines.forEach(line=>{
+        if(line.trim().startsWith('```')){
+          if(!inCode){inCode=true;codeBuf=[];}
+          else{children.push(new Paragraph({children:[new TextRun({text:codeBuf.join('\n'),font:"Courier New",size:18,color:"E2E8F0"})],shading:{type:ShadingType.CLEAR,fill:"0F172A"},spacing:{before:120,after:120},indent:{left:360,right:360}}));inCode=false;}
+          return;
+        }
+        if(inCode){codeBuf.push(line);return;}
+        if(!line.trim()) return;
+        const hm=line.match(/^(#{1,4})\s+(.+)/);
+        if(hm){children.push(new Paragraph({heading:hl[hm[1].length-1]||HeadingLevel.HEADING_4,children:pi(hm[2])}));return;}
+        if(/^>\s?/.test(line)){children.push(new Paragraph({children:pi(line.replace(/^>\s?/,'')),indent:{left:720},border:{left:{style:BorderStyle.THICK,size:12,color:accentHex,space:12}},shading:{type:ShadingType.CLEAR,fill:"F9F9F9"},spacing:{before:80,after:80}}));return;}
+        if(/^-\s/.test(line)){children.push(new Paragraph({numbering:{reference:"b",level:0},children:pi(line.replace(/^-\s/,''))}));return;}
+        if(/^\d+\.\s+/.test(line)){children.push(new Paragraph({numbering:{reference:"n",level:0},children:pi(line.replace(/^\d+\.\s+/,''))}));return;}
+        if(/^---+$/.test(line.trim())){children.push(new Paragraph({border:{bottom:{style:BorderStyle.SINGLE,size:6,color:"CCCCCC",space:1}},children:[new TextRun('')],spacing:{after:200}}));return;}
+        children.push(new Paragraph({children:pi(line),spacing:{after:100}}));
+      });
+      const doc=new Document({
+        creator:author,title:name,numbering:{config:bulletConfig},
+        styles:{
+          default:{document:{run:{font:"Arial",size:24}}},
+          paragraphStyles:[
+            {id:"Heading1",name:"Heading 1",basedOn:"Normal",next:"Normal",quickFormat:true,run:{size:40,bold:true,font:"Arial",color:"111111"},paragraph:{spacing:{before:320,after:200},border:{bottom:{style:BorderStyle.SINGLE,size:6,color:"CCCCCC",space:4}},outlineLevel:0}},
+            {id:"Heading2",name:"Heading 2",basedOn:"Normal",next:"Normal",quickFormat:true,run:{size:32,bold:true,font:"Arial",color:"222222"},paragraph:{spacing:{before:240,after:160},outlineLevel:1}},
+            {id:"Heading3",name:"Heading 3",basedOn:"Normal",next:"Normal",quickFormat:true,run:{size:26,bold:true,font:"Arial",color:"333333"},paragraph:{spacing:{before:200,after:120},outlineLevel:2}},
+          ]
+        },
+        sections:[{
+          properties:{page:{size:{width:11906,height:16838},margin:{top:1440,right:1440,bottom:1440,left:1440}}},
+          headers:{default:new Header({children:[new Paragraph({children:[new TextRun({text:name,color:"888888",size:18})],alignment:AlignmentType.RIGHT,border:{bottom:{style:BorderStyle.SINGLE,size:4,color:"EEEEEE",space:4}}})]})},
+          footers:{default:new Footer({children:[new Paragraph({children:[new TextRun({text:`${author} — `,color:"AAAAAA",size:16}),new TextRun({children:[PageNumber.CURRENT],color:"AAAAAA",size:16}),new TextRun({text:" / ",color:"AAAAAA",size:16}),new TextRun({children:[PageNumber.TOTAL_PAGES],color:"AAAAAA",size:16})],alignment:AlignmentType.CENTER,border:{top:{style:BorderStyle.SINGLE,size:4,color:"EEEEEE",space:4}}})]})},
+          children
+        }]
+      });
+      const buf=await Packer.toBlob(doc);
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(buf); a.download=name+'.docx'; a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),30000);
+      showToast('✓ Word document downloaded!','success');
+    });
+
+    /* ══ CLEAR ══ */
+    document.getElementById("clear-editor").addEventListener("click",()=>{
+      if(!input.value||confirm('Clear all content?')){ input.value=""; render(); }
+    });
+
+    /* ══ INIT ══ */
+    applyCustomization();
+    render();
+  </script>
+</body>
+</html>

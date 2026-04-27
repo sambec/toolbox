@@ -1,4 +1,4 @@
-# We love PDF
+# My little toolbox
 
 Une boite a outils PDF 100 % front-end, concue pour tourner directement dans le navigateur sans envoyer de fichiers vers un serveur.
 
@@ -40,7 +40,7 @@ Le projet est volontairement leger:
 
 - [index.html](/Users/sarah/Documents/GitHub/toolbox/index.html) contient l'interface et la logique JavaScript
 - [style.css](/Users/sarah/Documents/GitHub/toolbox/style.css) contient le style global
-- [main.html](/Users/sarah/Documents/GitHub/toolbox/main.html) sert de menu principal pour entrer dans les differentes mini-toolboxes
+- [index.html](/Users/sarah/Documents/GitHub/toolbox/index.html) sert de menu principal pour entrer dans les differentes mini-toolboxes
 - [common.css](/Users/sarah/Documents/GitHub/toolbox/common.css) porte le style partage entre les pages
 - [counters.html](/Users/sarah/Documents/GitHub/toolbox/counters.html) regroupe les outils de temps et de conversions
 - [markdown-studio.html](/Users/sarah/Documents/GitHub/toolbox/markdown-studio.html) propose un mini editeur Markdown avec compteur

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Image Lab</title>
-  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="../static/common.css">
   <style>
     :root {
       --bg: var(--tb-bg);
@@ -106,7 +106,7 @@
 
     .layout {
       display: grid;
-      grid-template-columns: 0.92fr 1.08fr;
+      grid-template-columns: 1fr;
       gap: 22px;
     }
 
@@ -374,11 +374,184 @@
       border-radius: 16px;
       overflow: hidden;
       background: #fff;
+      position: relative;
+      cursor: grab;
+    }
+    .swatch.dragging {
+      opacity: 0.5;
+    }
+    .swatch.drag-over {
+      outline: 2px dashed var(--accent);
+      outline-offset: 2px;
     }
 
     .swatch-color {
       height: 82px;
       position: relative;
+    }
+
+    .swatch-remove {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      width: 24px;
+      height: 24px;
+      border: 1px solid rgba(0,0,0,.16);
+      border-radius: 999px;
+      background: rgba(255,255,255,.92);
+      color: #0f172a;
+      font-weight: 800;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 3;
+    }
+
+    .swatch-actions {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 6px;
+      z-index: 3;
+    }
+
+    .swatch-move {
+      width: 24px;
+      height: 24px;
+      border: 1px solid rgba(0,0,0,.16);
+      border-radius: 999px;
+      background: rgba(255,255,255,.92);
+      color: #0f172a;
+      font-weight: 800;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .swatch-move[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .palette-reco-wrap {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      background: #fff;
+      display: grid;
+      gap: 12px;
+    }
+
+    .palette-reco-controls {
+      display: grid;
+      grid-template-columns: 170px 1fr;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .main-color-box {
+      display: grid;
+      gap: 7px;
+    }
+
+    #main-color {
+      width: 100%;
+      height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      padding: 3px 4px;
+      cursor: pointer;
+    }
+
+    .reco-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+
+    .reco-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+      background: #fff;
+      display: grid;
+      gap: 9px;
+    }
+
+    .reco-card strong {
+      font-size: 0.92rem;
+    }
+
+    .reco-colors {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+
+    .reco-chip {
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,.08);
+      height: 28px;
+    }
+
+    .reco-actions {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    /* ══ TABS ══ */
+    .tabs-nav {
+      display: flex;
+      gap: 8px;
+      border-bottom: 2px solid var(--line);
+      margin: 0 0 24px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 12px 18px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.95rem;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      color: var(--ink);
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .import-section {
+      margin-bottom: 28px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    html[data-theme="dark"] .tab-btn.active {
+      color: var(--accent);
     }
 
     .swatch-badge {
@@ -425,56 +598,113 @@
         width: 100%;
       }
     }
+
+    html[data-theme="dark"] body {
+      background:
+        radial-gradient(circle at top left, rgba(96, 165, 250, 0.16), transparent 24%),
+        linear-gradient(180deg, #111722 0%, var(--bg) 100%);
+    }
+
+    html[data-theme="dark"] .toolbar a,
+    html[data-theme="dark"] .toolbar button,
+    html[data-theme="dark"] .dropzone,
+    html[data-theme="dark"] select,
+    html[data-theme="dark"] input[type="search"],
+    html[data-theme="dark"] input[type="text"],
+    html[data-theme="dark"] .secondary,
+    html[data-theme="dark"] .viewer,
+    html[data-theme="dark"] .result-box,
+    html[data-theme="dark"] .color-inspector,
+    html[data-theme="dark"] .swatch,
+    html[data-theme="dark"] .palette-reco-wrap,
+    html[data-theme="dark"] .reco-card,
+    html[data-theme="dark"] #main-color {
+      background: var(--surface);
+    }
+
+    html[data-theme="dark"] .swatch-remove,
+    html[data-theme="dark"] .swatch-move {
+      background: rgba(31, 41, 55, 0.96);
+      color: #f8fafc;
+      border-color: rgba(248, 250, 252, 0.2);
+    }
+
+    html[data-theme="dark"] .viewer,
+    html[data-theme="dark"] .color-preview {
+      background: #151d2a;
+    }
+
+    html[data-theme="dark"] .loupe {
+      background: rgba(26, 31, 43, 0.96);
+    }
+
+    html[data-theme="dark"] .loupe-canvas,
+    html[data-theme="dark"] .swatch-badge {
+      background: #1f2937;
+      color: #f8fafc;
+    }
   </style>
 </head>
 <body class="toolbox-page">
   <header class="toolbox-topbar">
     <div class="toolbox-topbar-inner">
-      <a href="main.html" class="toolbox-brand">
+      <a href="../index.html" class="toolbox-brand">
         <span class="toolbox-brand-mark">♥</span>
         My <em>little</em> toolbox
       </a>
-      <nav class="toolbox-nav">
-        <a href="main.html">Accueil</a>
-        <a href="index.html">PDF</a>
-        <a href="counters.html">Compteurs</a>
-        <a href="markdown-studio.html">Markdown</a>
-        <a href="image-lab.html" class="active">Images</a>
-      </nav>
+      <div class="toolbox-topbar-actions">
+        <nav class="toolbox-nav">
+          <a href="../index.html">Home</a>
+          <a href="pdf.html">PDF</a>
+          <a href="counters.html">Counters</a>
+          <a href="markdown-studio.html">Markdown</a>
+          <a href="image-lab.html" class="active">Images</a>
+        </nav>
+        <button type="button" class="toolbox-theme-toggle" data-theme-toggle aria-pressed="false">🌙 Dark mode</button>
+      </div>
     </div>
   </header>
 
   <main class="shell toolbox-shell">
     <section class="hero toolbox-hero">
       <span class="eyebrow toolbox-eyebrow">Image Lab</span>
-      <h1>Convertir, rogner, pipeter et fabriquer des palettes</h1>
-      <p class="lead">Chargez une image PNG ou JPG, convertissez-la, choisissez vos couleurs a la pipette, composez une palette avec roue chromatique et explorez un mini catalogue d'icones exportables en PNG.</p>
+      <h1>Convert, crop, sample, and build palettes</h1>
+      <p class="lead">Load a PNG or JPG image, convert it, pick colors with the colour picker, build a palette with the color wheel, and explore a mini catalog of exportable PNG icons.</p>
       <div class="toolbar toolbox-linkbar">
-        <button id="clear-image">Effacer l'image</button>
+        <button id="clear-image">Clear image</button>
       </div>
     </section>
 
     <section class="layout">
-      <div class="stack">
-        <article class="card">
-          <h2>Importer une image</h2>
-          <p>PNG et JPG sont supportes pour la conversion, la palette et la pipette. Le fond blanc est applique automatiquement lors d'une conversion vers JPG.</p>
-          <label class="dropzone" id="dropzone">
-            <strong>Deposer une image ici</strong><br>
-            <span class="meta">ou cliquer pour parcourir</span>
-            <input id="image-input" type="file" accept="image/png,image/jpeg">
-          </label>
-          <div class="result-box" id="image-meta">
-            <strong>Aucune image chargee</strong>
-            <div class="meta">Les dimensions et le format apparaitront ici.</div>
-          </div>
-        </article>
+      <!-- IMPORT SECTION (Always visible) -->
+      <article class="card import-section">
+        <h2>Import an image</h2>
+        <p>PNG and JPG are supported for conversion, palette extraction, and the colour picker. A white background is applied automatically when converting to JPG.</p>
+        <label class="dropzone" id="dropzone">
+          <strong>Drop an image here</strong><br>
+          <span class="meta">or click to browse</span>
+          <input id="image-input" type="file" accept="image/png,image/jpeg">
+        </label>
+        <div class="result-box" id="image-meta">
+          <strong>No image loaded</strong>
+          <div class="meta">Dimensions and format will appear here.</div>
+        </div>
+      </article>
 
+      <!-- TAB NAVIGATION -->
+      <div class="tabs-nav">
+        <button class="tab-btn active" data-tab="format">Format converter</button>
+        <button class="tab-btn" data-tab="crop">Crop tool</button>
+        <button class="tab-btn" data-tab="palette">Palette generation</button>
+      </div>
+
+      <!-- TAB 1: FORMAT CONVERTER -->
+      <div class="tab-content active" id="tab-format">
         <article class="card">
-          <h2>Convertisseur de format</h2>
+          <h2>Format converter</h2>
           <div class="cols-2">
             <div>
-              <label for="format-select">Format cible</label>
+              <label for="format-select">Target format</label>
               <select id="format-select">
                 <option value="image/png">PNG</option>
                 <option value="image/jpeg">JPG</option>
@@ -482,18 +712,52 @@
               </select>
             </div>
             <div>
-              <label for="quality-range">Qualite</label>
+              <label for="quality-range">Quality</label>
               <input id="quality-range" type="range" min="0.5" max="1" step="0.05" value="0.9">
             </div>
           </div>
           <div class="controls">
-            <button class="primary" id="download-converted">Telecharger l'image convertie</button>
+            <button class="primary" id="download-converted">Download converted image</button>
           </div>
         </article>
+      </div>
 
+      <!-- TAB 2: CROP TOOL -->
+      <div class="tab-content" id="tab-crop">
         <article class="card">
-          <h2>Roue chromatique & couleur active</h2>
-          <p>Choisissez une couleur a la main, ajustez la saturation et la luminosite, puis ajoutez-la a la palette.</p>
+          <h2>Crop tool & colour picker</h2>
+          <p>Choose a mode before interacting with the image: crop to draw an area, colour picker to sample colors.</p>
+          <div class="controls">
+            <button class="secondary mode-btn active" id="mode-crop">Crop mode</button>
+            <button class="secondary mode-btn" id="mode-picker">Colour picker mode</button>
+          </div>
+          <div class="mode-note" id="mode-note">Crop mode is active. Click and drag on the image.</div>
+          <div class="viewer" id="viewer">
+            <canvas id="image-canvas"></canvas>
+            <div id="crop-box"></div>
+            <div class="loupe" id="loupe">
+              <canvas class="loupe-canvas" id="loupe-canvas" width="92" height="92"></canvas>
+              <div class="loupe-info" id="loupe-info">Colour picker inactive</div>
+            </div>
+          </div>
+          <div class="controls">
+            <button class="primary" id="download-crop">Download crop</button>
+            <button class="secondary" id="reset-crop">Reset selection</button>
+            <button class="secondary" id="add-picked-color">Add sampled color to palette</button>
+          </div>
+          <ul class="hint-list">
+            <li>The colour picker shows a pixel zoom and reads exact colors from the image.</li>
+            <li>Sampled colors are added to the palette in the Palette generation tab.</li>
+            <li>The crop export format follows the conversion selector.</li>
+          </ul>
+        </article>
+      </div>
+
+      <!-- TAB 3: PALETTE GENERATION -->
+      <div class="tab-content" id="tab-palette">
+        <article class="card">
+          <h2>Color wheel & manual color selection</h2>
+          <p>Choose colors manually using the color wheel, adjust saturation and lightness, then add them to your palette.</p>
           <div class="wheel-wrap">
             <div class="wheel-stage">
               <canvas id="color-wheel" width="210" height="210"></canvas>
@@ -503,11 +767,11 @@
                   <input id="sat-range" type="range" min="0" max="100" value="80">
                 </div>
                 <div>
-                  <label for="light-range">Luminosite</label>
+                  <label for="light-range">Lightness</label>
                   <input id="light-range" type="range" min="0" max="100" value="55">
                 </div>
                 <div class="controls">
-                  <button class="primary" id="add-wheel-color">Ajouter a la palette</button>
+                  <button class="primary" id="add-wheel-color">Add to palette</button>
                 </div>
               </div>
             </div>
@@ -518,76 +782,89 @@
                 <div class="value-grid">
                   <div><span class="formula-note">RGB</span><br><span id="active-rgb">rgb(193, 68, 14)</span></div>
                   <div><span class="formula-note">HSL</span><br><span id="active-hsl">hsl(18, 86%, 41%)</span></div>
-                  <div><span class="formula-note">Source</span><br><span id="active-source">Roue chromatique</span></div>
-                  <div><span class="formula-note">Coordonnees</span><br><span id="active-coords">-</span></div>
+                  <div><span class="formula-note">Source</span><br><span id="active-source">Color wheel</span></div>
+                  <div><span class="formula-note">Coordinates</span><br><span id="active-coords">-</span></div>
                 </div>
               </div>
             </div>
           </div>
         </article>
 
-      </div>
-
-      <div class="stack">
-        <article class="card">
-          <h2>Rogneur & pipette</h2>
-          <p>Choisissez un mode avant d'interagir avec l'image: rognage pour dessiner une zone, pipette pour lire une couleur.</p>
-          <div class="controls">
-            <button class="secondary mode-btn active" id="mode-crop">Mode rognage</button>
-            <button class="secondary mode-btn" id="mode-picker">Mode pipette</button>
-          </div>
-          <div class="mode-note" id="mode-note">Le rognage est actif. Cliquez et glissez sur l'image.</div>
-          <div class="viewer" id="viewer">
-            <canvas id="image-canvas"></canvas>
-            <div id="crop-box"></div>
-            <div class="loupe" id="loupe">
-              <canvas class="loupe-canvas" id="loupe-canvas" width="92" height="92"></canvas>
-              <div class="loupe-info" id="loupe-info">Pipette inactive</div>
-            </div>
-          </div>
-          <div class="controls">
-            <button class="primary" id="download-crop">Telecharger le rognage</button>
-            <button class="secondary" id="reset-crop">Reinitialiser la selection</button>
-            <button class="secondary" id="add-picked-color">Ajouter la couleur pipettee</button>
-          </div>
-          <ul class="hint-list">
-            <li>Le rognage, la pipette et la palette travaillent sur l'image actuellement chargee.</li>
-            <li>La pipette affiche un zoom pixel et recupere les couleurs exactes du canvas.</li>
-            <li>Le format de sortie du rognage suit le selecteur de conversion.</li>
-          </ul>
-        </article>
-
         <article class="card">
           <div class="row" style="justify-content:space-between;align-items:end">
             <div>
-              <h2>Generateur de palette</h2>
-              <p>Extraction plus fine avec couleurs dominantes, pourcentages et ajout manuel.</p>
+              <h2>Palette generator</h2>
+              <p>Extract dominant colors from images, or add manually picked colors from the colour picker and color wheel above.</p>
             </div>
           </div>
           <div class="palette-toolbar">
             <div class="row" style="flex:1">
               <div style="min-width:180px;flex:1">
-                <label for="palette-name">Nom de la palette</label>
-                <input id="palette-name" type="text" value="Palette Image Lab" placeholder="Nom de la palette">
+                <label for="palette-name">Palette name</label>
+                <input id="palette-name" type="text" value="Image Lab Palette" placeholder="Palette name">
               </div>
               <div style="min-width:180px;flex:1">
-                <label for="palette-size">Nombre exact de couleurs</label>
-                <input id="palette-size" type="text" value="5" inputmode="numeric" placeholder="ex : 7">
+                <label for="palette-size">Exact number of colors</label>
+                <input id="palette-size" type="text" value="5" inputmode="numeric" placeholder="e.g. 7">
               </div>
             </div>
             <div class="controls" style="margin-top:0">
-              <button class="primary" id="extract-palette">Extraire la palette</button>
-              <button class="secondary" id="copy-palette-css">Copier en CSS</button>
-              <button class="secondary" id="download-palette-image">Telecharger la palette en image</button>
-              <button class="secondary" id="clear-palette">Vider la palette</button>
+              <button class="primary" id="extract-palette">Extract palette</button>
+              <button class="secondary" id="copy-palette-css">Copy as CSS</button>
+              <button class="secondary" id="download-palette-image">Download palette image</button>
+              <button class="secondary" id="clear-palette">Clear palette</button>
             </div>
           </div>
           <div class="palette" id="palette"></div>
+          <div class="palette-reco-wrap">
+            <div>
+              <h3>Recommended palettes from a main color</h3>
+              <p class="meta">Pick a base color, then apply or append one of the suggested palettes.</p>
+            </div>
+            <div class="palette-reco-controls">
+              <div class="main-color-box">
+                <label for="main-color">Main color</label>
+                <input id="main-color" type="color" value="#C1440E">
+              </div>
+              <div class="controls" style="margin-top:0">
+                <button class="secondary" id="use-active-as-main">Use active color</button>
+              </div>
+            </div>
+            <div class="reco-grid" id="palette-recos"></div>
+          </div>
         </article>
       </div>
     </section>
   </main>
 
+  <script>
+    // Tab switching
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tabName = btn.dataset.tab;
+        // Deactivate all tabs and buttons
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+        // Activate selected tab
+        btn.classList.add("active");
+        document.getElementById(`tab-${tabName}`).classList.add("active");
+        // Trigger redraw for canvases if needed
+        if (tabName === "crop") {
+          setTimeout(() => { if (state.image) { fitCanvas(state.image); } }, 50);
+        }
+        if (tabName === "palette") {
+          setTimeout(() => { drawColorWheel(); }, 50);
+        }
+      });
+    });
+  </script>
+
+  <footer class="toolbox-footer">
+    <strong>My little toolbox</strong> — 100% local tools, no file ever sent to a server.<br>
+    Made with ♥ by <a href="https://sambec.github.io" target="_blank" rel="noreferrer">Sarah Ambec</a>
+  </footer>
+
+  <script src="../static/theme.js"></script>
   <script>
     const input = document.getElementById("image-input");
     const dropzone = document.getElementById("dropzone");
@@ -603,6 +880,9 @@
     const loupeInfo = document.getElementById("loupe-info");
     const wheelCanvas = document.getElementById("color-wheel");
     const wheelCtx = wheelCanvas.getContext("2d");
+    const recosEl = document.getElementById("palette-recos");
+    const sourceCanvas = document.createElement("canvas");
+    const sourceCtx = sourceCanvas.getContext("2d", { willReadFrequently: true });
     const state = {
       image: null,
       name: "image",
@@ -614,10 +894,11 @@
       mode: "crop",
       palette: [],
       pickedColor: null,
-      activeColor: { hex: "#C1440E", rgb: [193, 68, 14], hsl: [18, 86, 41], source: "Roue chromatique", coords: "-" },
+      activeColor: { hex: "#C1440E", rgb: [193, 68, 14], hsl: [18, 86, 41], source: "Color wheel", coords: "-" },
       wheelHue: 18,
       wheelSat: 80,
-      wheelLight: 55
+      wheelLight: 55,
+      dragIndex: null
     };
 
     function loadFile(file) {
@@ -629,6 +910,10 @@
         const img = new Image();
         img.onload = () => {
           state.image = img;
+          sourceCanvas.width = img.width;
+          sourceCanvas.height = img.height;
+          sourceCtx.clearRect(0, 0, sourceCanvas.width, sourceCanvas.height);
+          sourceCtx.drawImage(img, 0, 0);
           fitCanvas(img);
           resetCrop();
           hideLoupe();
@@ -772,6 +1057,21 @@
       ];
     }
 
+    function hexToRgb(hex) {
+      const value = String(hex || "").replace("#", "").trim();
+      if (!/^[0-9a-fA-F]{6}$/.test(value)) return null;
+      return [
+        parseInt(value.slice(0, 2), 16),
+        parseInt(value.slice(2, 4), 16),
+        parseInt(value.slice(4, 6), 16)
+      ];
+    }
+
+    function normalizeHue(value) {
+      const h = Math.round(value) % 360;
+      return h < 0 ? h + 360 : h;
+    }
+
     function setActiveColorFromRgb(r, g, b, source, coords = "-") {
       const hex = rgbToHex(r, g, b);
       const hsl = rgbToHsl(r, g, b);
@@ -796,7 +1096,16 @@
       state.palette.forEach((item, index) => {
         const swatch = document.createElement("div");
         swatch.className = "swatch";
+        swatch.draggable = true;
+        swatch.dataset.index = String(index);
+        const canMoveUp = index > 0;
+        const canMoveDown = index < state.palette.length - 1;
         swatch.innerHTML = `
+          <button type="button" class="swatch-remove" title="Remove this color" aria-label="Remove color">×</button>
+          <div class="swatch-actions">
+            <button type="button" class="swatch-move" data-dir="up" title="Move color up" aria-label="Move color up" ${canMoveUp ? "" : "disabled"}>↑</button>
+            <button type="button" class="swatch-move" data-dir="down" title="Move color down" aria-label="Move color down" ${canMoveDown ? "" : "disabled"}>↓</button>
+          </div>
           <div class="swatch-color" style="background:${item.hex}">
             ${item.weight != null ? `<span class="swatch-badge">${item.weight}%</span>` : ""}
           </div>
@@ -805,13 +1114,123 @@
             <small>${item.label || `rgb(${item.rgb.join(", ")})`}</small>
           </div>
         `;
+        swatch.querySelector(".swatch-remove").addEventListener("click", event => {
+          event.stopPropagation();
+          state.palette.splice(index, 1);
+          renderPalette();
+        });
+        swatch.querySelectorAll(".swatch-move").forEach(button => {
+          button.addEventListener("click", event => {
+            event.stopPropagation();
+            if (button.disabled) return;
+            const dir = button.dataset.dir;
+            const target = dir === "up" ? index - 1 : index + 1;
+            if (target < 0 || target >= state.palette.length) return;
+            const moved = state.palette.splice(index, 1)[0];
+            state.palette.splice(target, 0, moved);
+            renderPalette();
+          });
+        });
         swatch.addEventListener("click", () => setActiveColorFromRgb(item.rgb[0], item.rgb[1], item.rgb[2], item.source || "Palette", item.coords || "-"));
         swatch.addEventListener("contextmenu", event => {
           event.preventDefault();
           state.palette.splice(index, 1);
           renderPalette();
         });
+        swatch.addEventListener("dragstart", event => {
+          state.dragIndex = index;
+          swatch.classList.add("dragging");
+          event.dataTransfer.effectAllowed = "move";
+          event.dataTransfer.setData("text/plain", String(index));
+        });
+        swatch.addEventListener("dragover", event => {
+          event.preventDefault();
+          swatch.classList.add("drag-over");
+          event.dataTransfer.dropEffect = "move";
+        });
+        swatch.addEventListener("dragleave", () => swatch.classList.remove("drag-over"));
+        swatch.addEventListener("drop", event => {
+          event.preventDefault();
+          swatch.classList.remove("drag-over");
+          const from = state.dragIndex != null ? state.dragIndex : parseInt(event.dataTransfer.getData("text/plain"), 10);
+          const to = index;
+          if (!Number.isInteger(from) || from === to || from < 0 || from >= state.palette.length) return;
+          const moved = state.palette.splice(from, 1)[0];
+          state.palette.splice(to, 0, moved);
+          state.dragIndex = null;
+          renderPalette();
+        });
+        swatch.addEventListener("dragend", () => {
+          state.dragIndex = null;
+          paletteEl.querySelectorAll(".swatch").forEach(el => {
+            el.classList.remove("drag-over", "dragging");
+          });
+        });
         paletteEl.appendChild(swatch);
+      });
+    }
+
+    function buildRecommendedPalettes(mainHex) {
+      const rgb = hexToRgb(mainHex);
+      if (!rgb) return [];
+      const [h, s, l] = rgbToHsl(rgb[0], rgb[1], rgb[2]);
+      const make = (name, hueOffsets, satValues, lightValues) => ({
+        name,
+        colors: hueOffsets.map((offset, idx) => {
+          const toneRgb = hslToRgb(normalizeHue(h + offset), satValues[idx], lightValues[idx]);
+          return {
+            hex: rgbToHex(toneRgb[0], toneRgb[1], toneRgb[2]),
+            rgb: toneRgb,
+            hsl: rgbToHsl(toneRgb[0], toneRgb[1], toneRgb[2]),
+            source: `${name} recommendation`,
+            label: `hsl(${normalizeHue(h + offset)}, ${satValues[idx]}%, ${lightValues[idx]}%)`
+          };
+        })
+      });
+
+      return [
+        make("Analogous", [-30, -12, 0, 12, 30], [Math.max(35, s - 8), s, s, s, Math.max(35, s - 8)], [Math.max(26, l - 8), l, Math.min(72, l + 10), l, Math.max(28, l - 6)]),
+        make("Complementary", [0, 0, 180, 180, 180], [s, Math.max(28, s - 18), s, Math.max(35, s - 10), Math.max(22, s - 26)], [Math.max(25, l - 10), Math.min(82, l + 18), Math.max(25, l - 12), l, Math.min(82, l + 20)]),
+        make("Triadic", [0, 120, 240, 120, 240], [s, Math.max(40, s - 10), Math.max(40, s - 10), Math.max(35, s - 18), Math.max(35, s - 18)], [l, l, l, Math.min(80, l + 16), Math.max(26, l - 12)]),
+        make("Monochrome", [0, 0, 0, 0, 0], [Math.max(14, s - 38), Math.max(22, s - 22), s, Math.max(24, s - 14), Math.max(16, s - 28)], [14, 30, l, Math.min(82, l + 18), 90])
+      ];
+    }
+
+    function renderRecommendations() {
+      const mainColor = document.getElementById("main-color").value;
+      const recommendations = buildRecommendedPalettes(mainColor);
+      recosEl.innerHTML = "";
+      recommendations.forEach((recommendation, index) => {
+        const card = document.createElement("div");
+        card.className = "reco-card";
+        card.innerHTML = `
+          <strong>${recommendation.name}</strong>
+          <div class="reco-colors">
+            ${recommendation.colors.map(color => `<div class="reco-chip" style="background:${color.hex}" title="${color.hex}"></div>`).join("")}
+          </div>
+          <div class="reco-actions">
+            <button type="button" class="secondary" data-action="replace" data-index="${index}">Use as palette</button>
+            <button type="button" class="secondary" data-action="append" data-index="${index}">Add to current</button>
+          </div>
+        `;
+        recosEl.appendChild(card);
+      });
+
+      recosEl.querySelectorAll("button[data-action]").forEach(button => {
+        button.addEventListener("click", () => {
+          const idx = parseInt(button.dataset.index || "-1", 10);
+          const recommendation = recommendations[idx];
+          if (!recommendation) return;
+          if (button.dataset.action === "replace") {
+            state.palette = recommendation.colors.map(color => ({ ...color }));
+            renderPalette();
+            if (state.palette[0]) {
+              setActiveColorFromRgb(state.palette[0].rgb[0], state.palette[0].rgb[1], state.palette[0].rgb[2], state.palette[0].source, "-");
+            }
+            return;
+          }
+          recommendation.colors.forEach(color => addColorToPalette(color));
+        });
       });
     }
 
@@ -875,7 +1294,7 @@
           hex,
           rgb: center,
           hsl: rgbToHsl(center[0], center[1], center[2]),
-          source: "Palette extraite",
+          source: "Extracted palette",
           weight: Math.round((count / pixels.length) * 100),
           label: `rgb(${center.join(", ")})`
         };
@@ -883,7 +1302,7 @@
 
       state.palette = dedupePalette(enriched);
       renderPalette();
-      if (state.palette[0]) setActiveColorFromRgb(state.palette[0].rgb[0], state.palette[0].rgb[1], state.palette[0].rgb[2], "Palette extraite", "-");
+      if (state.palette[0]) setActiveColorFromRgb(state.palette[0].rgb[0], state.palette[0].rgb[1], state.palette[0].rgb[2], "Extracted palette", "-");
     }
 
     function nearestCenterIndex(pixel, centers) {
@@ -936,18 +1355,18 @@
       if (!state.image) return;
       const imageCoords = canvasToImageCoords(pos);
       if (!imageCoords) return;
-      const pixel = ctx.getImageData(Math.max(0, Math.min(canvas.width - 1, Math.round(pos.x))), Math.max(0, Math.min(canvas.height - 1, Math.round(pos.y))), 1, 1).data;
+      const pixel = sourceCtx.getImageData(imageCoords.x, imageCoords.y, 1, 1).data;
       const rgb = [pixel[0], pixel[1], pixel[2]];
       const color = {
         hex: rgbToHex(rgb[0], rgb[1], rgb[2]),
         rgb,
         hsl: rgbToHsl(rgb[0], rgb[1], rgb[2]),
-        source: "Pipette",
+        source: "Colour picker",
         coords: `${imageCoords.x}, ${imageCoords.y}`,
         label: `rgb(${rgb.join(", ")})`
       };
       if (commit) state.pickedColor = color;
-      setActiveColorFromRgb(rgb[0], rgb[1], rgb[2], commit ? "Pipette selectionnee" : "Pipette apercu", `${imageCoords.x}, ${imageCoords.y}`);
+      setActiveColorFromRgb(rgb[0], rgb[1], rgb[2], commit ? "Colour picker selected" : "Colour picker preview", `${imageCoords.x}, ${imageCoords.y}`);
       showLoupe(imageCoords, pos);
       return color;
     }
@@ -958,8 +1377,8 @@
       document.getElementById("mode-picker").classList.toggle("active", mode === "picker");
       viewer.style.cursor = mode === "picker" ? "copy" : "crosshair";
       document.getElementById("mode-note").textContent = mode === "picker"
-        ? "La pipette est active. Deplacez-vous sur l'image puis cliquez pour memoriser une couleur."
-        : "Le rognage est actif. Cliquez et glissez sur l'image.";
+        ? "Colour picker mode is active. Move over the image, then click to save a color."
+        : "Crop mode is active. Click and drag on the image.";
       if (mode !== "picker") hideLoupe();
     }
 
@@ -993,7 +1412,7 @@
       wheelCtx.stroke();
 
       const rgb = hslToRgb(state.wheelHue, state.wheelSat, state.wheelLight);
-      setActiveColorFromRgb(rgb[0], rgb[1], rgb[2], "Roue chromatique", "-");
+      setActiveColorFromRgb(rgb[0], rgb[1], rgb[2], "Color wheel", "-");
     }
 
     function updateWheelFromPointer(event) {
@@ -1014,7 +1433,7 @@
     function downloadPaletteImage() {
       if (!state.palette.length) return;
       const count = state.palette.length;
-      const paletteName = (document.getElementById("palette-name").value || "Palette Image Lab").trim();
+      const paletteName = (document.getElementById("palette-name").value || "Image Lab Palette").trim();
       const width = 1400;
       const heroHeight = 250;
       const columns = Math.min(4, count);
@@ -1036,13 +1455,13 @@
 
       octx.fillStyle = "#c1440e";
       octx.font = "700 26px 'DM Sans', sans-serif";
-      octx.fillText("Palette exportee", 48, 66);
+      octx.fillText("Exported palette", 48, 66);
       octx.fillStyle = "#1a1a2e";
       octx.font = "600 54px 'DM Serif Display', Georgia, serif";
       octx.fillText(paletteName, 48, 128);
       octx.fillStyle = "#6b7280";
       octx.font = "400 22px 'DM Sans', sans-serif";
-      octx.fillText(`${count} couleur${count > 1 ? "s" : ""}`, 48, 164);
+      octx.fillText(`${count} color${count > 1 ? "s" : ""}`, 48, 164);
 
       if (state.image) {
         const previewW = 250;
@@ -1132,7 +1551,7 @@
       if (state.mode === "picker") {
         const color = pickColorAt(pos, true);
         addColorToPalette(color);
-        document.getElementById("mode-note").textContent = `Couleur ${color.hex} ajoutee a la palette. Cliquez ailleurs pour en ajouter une autre.`;
+        document.getElementById("mode-note").textContent = `Color ${color.hex} added to the palette. Click elsewhere to add another one.`;
         return;
       }
       state.dragging = true;
@@ -1199,27 +1618,35 @@
         hex: rgbToHex(rgb[0], rgb[1], rgb[2]),
         rgb,
         hsl: rgbToHsl(rgb[0], rgb[1], rgb[2]),
-        source: "Roue chromatique",
+        source: "Color wheel",
         coords: "-",
         label: `hsl(${state.wheelHue}, ${state.wheelSat}%, ${state.wheelLight}%)`
       });
+    });
+    document.getElementById("main-color").addEventListener("input", renderRecommendations);
+    document.getElementById("use-active-as-main").addEventListener("click", () => {
+      document.getElementById("main-color").value = state.activeColor.hex;
+      renderRecommendations();
     });
     wheelCanvas.addEventListener("pointerdown", updateWheelFromPointer);
     document.getElementById("clear-image").addEventListener("click", () => {
       state.image = null;
       state.crop = null;
       state.pickedColor = null;
+      sourceCanvas.width = 0;
+      sourceCanvas.height = 0;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       canvas.width = 0;
       canvas.height = 0;
       paletteEl.innerHTML = "";
-      imageMeta.innerHTML = "<strong>Aucune image chargee</strong><div class='meta'>Les dimensions et le format apparaitront ici.</div>";
+      imageMeta.innerHTML = "<strong>No image loaded</strong><div class='meta'>Dimensions and format will appear here.</div>";
       drawSelection();
       hideLoupe();
     });
 
     drawColorWheel();
     renderPalette();
+    renderRecommendations();
     setMode("crop");
   </script>
 </body>

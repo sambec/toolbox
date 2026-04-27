@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Compteurs & Convertisseurs</title>
-  <link rel="stylesheet" href="common.css">
+  <title>Counters & Converters</title>
+  <link rel="stylesheet" href="../static/common.css">
   <style>
     :root {
       --bg: var(--tb-bg);
@@ -287,34 +287,64 @@
         width: min(100% - 20px, 1180px);
       }
     }
+
+    html[data-theme="dark"] body {
+      background:
+        radial-gradient(circle at top left, rgba(255, 138, 76, 0.12), transparent 30%),
+        linear-gradient(180deg, #15171f 0%, var(--bg) 100%);
+    }
+
+    html[data-theme="dark"] .nav a,
+    html[data-theme="dark"] input,
+    html[data-theme="dark"] select,
+    html[data-theme="dark"] textarea,
+    html[data-theme="dark"] .secondary,
+    html[data-theme="dark"] .result,
+    html[data-theme="dark"] .formula,
+    html[data-theme="dark"] .table th,
+    html[data-theme="dark"] .table td {
+      background: var(--surface);
+    }
+
+    html[data-theme="dark"] .formula {
+      border-color: #5c4735;
+    }
+
+    html[data-theme="dark"] .formula code {
+      background: #2b2230;
+      color: #ffd2b7;
+    }
   </style>
 </head>
 <body class="toolbox-page">
   <header class="toolbox-topbar">
     <div class="toolbox-topbar-inner">
-      <a href="main.html" class="toolbox-brand">
+      <a href="../index.html" class="toolbox-brand">
         <span class="toolbox-brand-mark">♥</span>
         My <em>little</em> toolbox
       </a>
-      <nav class="toolbox-nav">
-        <a href="main.html">Accueil</a>
-        <a href="index.html">PDF</a>
-        <a href="counters.html" class="active">Compteurs</a>
-        <a href="markdown-studio.html">Markdown</a>
-        <a href="image-lab.html">Images</a>
-      </nav>
+      <div class="toolbox-topbar-actions">
+        <nav class="toolbox-nav">
+          <a href="../index.html">Home</a>
+          <a href="pdf.html">PDF</a>
+          <a href="counters.html" class="active">Counters</a>
+          <a href="markdown-studio.html">Markdown</a>
+          <a href="image-lab.html">Images</a>
+        </nav>
+        <button type="button" class="toolbox-theme-toggle" data-theme-toggle aria-pressed="false">🌙 Dark mode</button>
+      </div>
     </div>
   </header>
 
   <main class="shell toolbox-shell">
     <section class="hero toolbox-hero">
-      <span class="eyebrow toolbox-eyebrow">Compteurs utiles</span>
-      <h1>Temps, conversions et tailles de fichiers</h1>
-      <p class="lead">Une mini toolbox pour calculer des durees, additionner des heures, convertir des unites du quotidien et expliquer clairement les conversions de stockage entre Go, To, Gb et Mb.</p>
+      <span class="eyebrow toolbox-eyebrow">Useful counters</span>
+      <h1>Time, conversions, and file sizes</h1>
+      <p class="lead">A mini toolbox for calculating durations, totaling hours, converting everyday units, and clearly explaining storage conversions between GB, TB, Gb, and Mb.</p>
       <nav class="nav toolbox-linkbar">
-        <a href="#time-card">Calculateur de temps</a>
-        <a href="#units-card">Convertisseur d'unites</a>
-        <a href="#storage-card">Go / To / Gb / Mb</a>
+        <a href="#time-card">Time calculator</a>
+        <a href="#units-card">Unit converter</a>
+        <a href="#storage-card">GB / TB / Gb / Mb</a>
       </nav>
     </section>
 
@@ -323,8 +353,8 @@
         <article class="card" id="time-card">
           <div class="card-header">
             <div>
-              <h2>Calculateur de temps</h2>
-              <p>Ajouter, soustraire et comparer des horaires. Vous pouvez aussi totaliser plusieurs lignes d'heures.</p>
+              <h2>Time calculator</h2>
+              <p>Add, subtract, and compare times. You can also total multiple lines of durations.</p>
             </div>
           </div>
 
@@ -332,52 +362,52 @@
             <div>
               <label for="time-operation">Mode</label>
               <select id="time-operation">
-                <option value="add">Additionner deux durees</option>
-                <option value="subtract">Soustraire une duree</option>
-                <option value="between">Trouver la duree entre deux horaires</option>
+                <option value="add">Add two durations</option>
+                <option value="subtract">Subtract a duration</option>
+                <option value="between">Find the duration between two times</option>
               </select>
             </div>
             <div>
-              <label for="time-format">Format d'affichage</label>
+              <label for="time-format">Display format</label>
               <select id="time-format">
                 <option value="clock">hh:mm</option>
-                <option value="decimal">heures decimales</option>
+                <option value="decimal">decimal hours</option>
                 <option value="minutes">minutes</option>
               </select>
             </div>
             <div>
-              <label for="time-value-a">Valeur A</label>
+              <label for="time-value-a">Value A</label>
               <input id="time-value-a" type="text" value="08:45" placeholder="08:45">
             </div>
             <div>
-              <label for="time-value-b">Valeur B</label>
+              <label for="time-value-b">Value B</label>
               <input id="time-value-b" type="text" value="02:30" placeholder="02:30">
             </div>
           </div>
 
           <div class="controls">
-            <button class="primary" id="run-time">Calculer</button>
-            <button class="secondary" id="swap-time">Intervertir</button>
+            <button class="primary" id="run-time">Calculate</button>
+            <button class="secondary" id="swap-time">Swap</button>
           </div>
 
           <div class="result" id="time-result">
             <strong>11:15</strong>
-            <div class="result-note">Exemple: 08:45 + 02:30 = 11:15</div>
+            <div class="result-note">Example: 08:45 + 02:30 = 11:15</div>
           </div>
 
           <div class="formula">
-            <h3>Totalisateur d'heures</h3>
-            <p>Collez une liste de durees, une par ligne, au format <code>hh:mm</code> ou <code>1.5h</code>.</p>
+            <h3>Hours totalizer</h3>
+            <p>Paste a list of durations, one per line, using <code>hh:mm</code> or <code>1.5h</code>.</p>
             <textarea id="timesheet-input">01:15
 02:40
 00:35
 1.5h</textarea>
             <div class="controls">
-              <button class="primary" id="sum-timesheet">Totaliser</button>
+              <button class="primary" id="sum-timesheet">Total</button>
             </div>
             <div class="result" id="timesheet-result">
               <strong>05:00</strong>
-              <div class="result-note">Le total apparaitra ici.</div>
+              <div class="result-note">The total will appear here.</div>
             </div>
           </div>
         </article>
@@ -385,42 +415,42 @@
         <article class="card" id="units-card">
           <div class="card-header">
             <div>
-              <h2>Convertisseur d'unites</h2>
-              <p>Longueur, poids, temperature et vitesse dans la meme interface.</p>
+              <h2>Unit converter</h2>
+              <p>Length, weight, temperature, and speed in one interface.</p>
             </div>
           </div>
 
           <div class="subgrid">
             <div>
-              <label for="unit-category">Categorie</label>
+              <label for="unit-category">Category</label>
               <select id="unit-category">
-                <option value="length">Longueur</option>
-                <option value="weight">Poids</option>
+                <option value="length">Length</option>
+                <option value="weight">Weight</option>
                 <option value="temperature">Temperature</option>
-                <option value="speed">Vitesse</option>
+                <option value="speed">Speed</option>
               </select>
             </div>
             <div>
-              <label for="unit-value">Valeur</label>
+              <label for="unit-value">Value</label>
               <input id="unit-value" type="number" value="12.5" step="any">
             </div>
             <div>
-              <label for="unit-from">De</label>
+              <label for="unit-from">From</label>
               <select id="unit-from"></select>
             </div>
             <div>
-              <label for="unit-to">Vers</label>
+              <label for="unit-to">To</label>
               <select id="unit-to"></select>
             </div>
           </div>
 
           <div class="controls">
-            <button class="primary" id="run-unit">Convertir</button>
+            <button class="primary" id="run-unit">Convert</button>
           </div>
 
           <div class="result" id="unit-result">
             <strong>12.5 m = 1250 cm</strong>
-            <div class="result-note">Les resultats s'affichent ici.</div>
+            <div class="result-note">Results will appear here.</div>
           </div>
         </article>
       </div>
@@ -429,70 +459,70 @@
         <article class="card" id="storage-card">
           <div class="card-header">
             <div>
-              <h2>Go, To, Gb, Mb</h2>
-              <p>Convertir des tailles de stockage et de debit, avec explication des formules.</p>
+              <h2>GB, TB, Gb, Mb</h2>
+              <p>Convert storage and bandwidth sizes, with formula explanations.</p>
             </div>
           </div>
 
           <div class="subgrid">
             <div>
-              <label for="storage-value">Valeur</label>
+              <label for="storage-value">Value</label>
               <input id="storage-value" type="number" value="1" step="any">
             </div>
             <div>
-              <label for="storage-system">Systeme</label>
+              <label for="storage-system">System</label>
               <select id="storage-system">
                 <option value="decimal">Decimal (1 Go = 1000 Mo)</option>
-                <option value="binary">Binaire (1 Gio = 1024 Mio)</option>
+                <option value="binary">Binary (1 GiB = 1024 MiB)</option>
               </select>
             </div>
             <div>
-              <label for="storage-from">De</label>
+              <label for="storage-from">From</label>
               <select id="storage-from">
-                <option value="TB">To / TB</option>
-                <option value="GB" selected>Go / GB</option>
-                <option value="MB">Mo / MB</option>
+                <option value="TB">TB</option>
+                <option value="GB" selected>GB</option>
+                <option value="MB">MB</option>
                 <option value="Kb">Kb</option>
                 <option value="Mb">Mb</option>
                 <option value="Gb">Gb</option>
                 <option value="bits">bits</option>
-                <option value="bytes">octets</option>
+                <option value="bytes">bytes</option>
               </select>
             </div>
             <div>
-              <label for="storage-to">Vers</label>
+              <label for="storage-to">To</label>
               <select id="storage-to">
-                <option value="TB">To / TB</option>
-                <option value="GB">Go / GB</option>
-                <option value="MB" selected>Mo / MB</option>
+                <option value="TB">TB</option>
+                <option value="GB">GB</option>
+                <option value="MB" selected>MB</option>
                 <option value="Kb">Kb</option>
                 <option value="Mb">Mb</option>
                 <option value="Gb">Gb</option>
                 <option value="bits">bits</option>
-                <option value="bytes">octets</option>
+                <option value="bytes">bytes</option>
               </select>
             </div>
           </div>
 
           <div class="controls">
-            <button class="primary" id="run-storage">Convertir</button>
+            <button class="primary" id="run-storage">Convert</button>
           </div>
 
           <div class="result" id="storage-result">
-            <strong>1 Go = 1000 Mo</strong>
-            <div class="result-note">Choisissez une valeur et un systeme decimal ou binaire.</div>
+            <strong>1 GB = 1000 MB</strong>
+            <div class="result-note">Choose a value and a decimal or binary system.</div>
           </div>
 
           <div class="formula" id="storage-formula">
-            <h3>Pourquoi ?</h3>
-            <p>Les tailles de fichiers et les debits ne parlent pas toujours de la meme chose.</p>
-            <code>1 octet = 8 bits</code>
+            <h3>Why?</h3>
+            <p>File sizes and network speeds do not always describe the same thing.</p>
+            <code>1 byte = 8 bits</code>
             <ul>
-              <li><strong>Go, To, Mo</strong> servent souvent pour le stockage.</li>
-              <li><strong>Gb, Mb</strong> servent souvent pour les debits reseau.</li>
-              <li><strong>GB vers Gb</strong> multiplie par 8, car on passe d'octets a bits.</li>
-              <li><strong>Decimal</strong>: 1 Go = 1000 Mo.</li>
-              <li><strong>Binaire</strong>: 1 Gio = 1024 Mio.</li>
+              <li><strong>GB, TB, MB</strong> are often used for storage.</li>
+              <li><strong>Gb, Mb</strong> are often used for network speeds.</li>
+              <li><strong>GB to Gb</strong> multiplies by 8 because you move from bytes to bits.</li>
+              <li><strong>Decimal</strong>: 1 GB = 1000 MB.</li>
+              <li><strong>Binary</strong>: 1 GiB = 1024 MiB.</li>
             </ul>
           </div>
         </article>
@@ -500,29 +530,29 @@
         <article class="card">
           <div class="card-header">
             <div>
-              <h2>Exemples utiles</h2>
-              <p>Quelques equivalences que l'on cherche souvent.</p>
+              <h2>Useful examples</h2>
+              <p>A few conversions people often look for.</p>
             </div>
           </div>
           <table class="table">
             <thead>
               <tr>
                 <th>Question</th>
-                <th>Reponse rapide</th>
+                <th>Quick answer</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>1 Go en Mb</td>
+                <td>1 GB in Mb</td>
                 <td>8000 Mb <span class="muted">(decimal)</span></td>
               </tr>
               <tr>
-                <td>1 To en Go</td>
-                <td>1000 Go <span class="muted">(decimal)</span></td>
+                <td>1 TB in GB</td>
+                <td>1000 GB <span class="muted">(decimal)</span></td>
               </tr>
               <tr>
-                <td>1 Gb/s en Mo/s</td>
-                <td>125 Mo/s</td>
+                <td>1 Gb/s in MB/s</td>
+                <td>125 MB/s</td>
               </tr>
               <tr>
                 <td>90 minutes</td>
@@ -532,15 +562,20 @@
           </table>
 
           <ul class="list">
-            <li>Quand on telecharge a <strong>1 Gb/s</strong>, on parle generalement de <strong>gigabits par seconde</strong>.</li>
-            <li>Quand un disque est vendu avec <strong>1 To</strong>, on parle generalement de <strong>teraoctets decimaux</strong>.</li>
-            <li>Le calculateur de temps accepte aussi des formats comme <strong>1.5h</strong>.</li>
+            <li>When a download speed is <strong>1 Gb/s</strong>, it usually means <strong>gigabits per second</strong>.</li>
+            <li>When a drive is sold as <strong>1 TB</strong>, it usually means <strong>decimal terabytes</strong>.</li>
+            <li>The time calculator also accepts formats like <strong>1.5h</strong>.</li>
           </ul>
         </article>
       </div>
     </section>
   </main>
+  <footer class="toolbox-footer">
+    <strong>My little toolbox</strong> — 100% local tools, no file ever sent to a server.<br>
+    Made with ♥ by <a href="https://sambec.github.io" target="_blank" rel="noreferrer">Sarah Ambec</a>
+  </footer>
 
+  <script src="../static/theme.js"></script>
   <script>
     const unitConfig = {
       length: {
@@ -597,7 +632,7 @@
       const result = document.getElementById("time-result");
 
       if (Number.isNaN(a) || Number.isNaN(b)) {
-        result.innerHTML = "<strong>Entree invalide</strong><div class='result-note'>Utilisez par exemple 08:45, 90, 1.5h ou 30m.</div>";
+        result.innerHTML = "<strong>Invalid input</strong><div class='result-note'>Use formats like 08:45, 90, 1.5h, or 30m.</div>";
         return;
       }
 
@@ -612,7 +647,7 @@
       } else {
         total = b - a;
         if (total < 0) total += 24 * 60;
-        note = `Entre ${formatClock(a)} et ${formatClock(b)}: ${formatDuration(total, display)}`;
+        note = `Between ${formatClock(a)} and ${formatClock(b)}: ${formatDuration(total, display)}`;
       }
 
       result.innerHTML = `<strong>${formatDuration(total, display)}</strong><div class="result-note">${note}</div>`;
@@ -623,11 +658,11 @@
       const values = lines.map(parseDuration);
       const result = document.getElementById("timesheet-result");
       if (values.some(Number.isNaN)) {
-        result.innerHTML = "<strong>Erreur</strong><div class='result-note'>Une ou plusieurs lignes ne sont pas reconnues.</div>";
+        result.innerHTML = "<strong>Error</strong><div class='result-note'>One or more lines could not be recognized.</div>";
         return;
       }
       const total = values.reduce((sum, value) => sum + value, 0);
-      result.innerHTML = `<strong>${formatClock(total)}</strong><div class="result-note">${roundSmart(total / 60)} heures decimales, soit ${roundSmart(total)} minutes.</div>`;
+      result.innerHTML = `<strong>${formatClock(total)}</strong><div class="result-note">${roundSmart(total / 60)} decimal hours, or ${roundSmart(total)} minutes.</div>`;
     }
 
     function populateUnits() {
@@ -666,7 +701,7 @@
       const result = document.getElementById("unit-result");
 
       if (Number.isNaN(value)) {
-        result.innerHTML = "<strong>Valeur invalide</strong><div class='result-note'>Saisissez un nombre.</div>";
+        result.innerHTML = "<strong>Invalid value</strong><div class='result-note'>Enter a number.</div>";
         return;
       }
 
@@ -674,12 +709,12 @@
       let note = "";
       if (category === "temperature") {
         converted = convertTemperature(value, from, to);
-        note = "La temperature ne suit pas une simple multiplication: il faut aussi gerer le decalage des echelles.";
+        note = "Temperature is not a simple multiplication: you also need to account for scale offsets.";
       } else {
         const config = unitConfig[category];
         const inBase = value * config.units[from];
         converted = inBase / config.units[to];
-        note = `Conversion via l'unite de base ${config.base}.`;
+        note = `Conversion through the base unit ${config.base}.`;
       }
 
       result.innerHTML = `<strong>${roundSmart(value)} ${from} = ${roundSmart(converted)} ${to}</strong><div class="result-note">${note}</div>`;
@@ -709,29 +744,29 @@
       const formula = document.getElementById("storage-formula");
 
       if (Number.isNaN(value)) {
-        result.innerHTML = "<strong>Valeur invalide</strong><div class='result-note'>Saisissez un nombre.</div>";
+        result.innerHTML = "<strong>Invalid value</strong><div class='result-note'>Enter a number.</div>";
         return;
       }
 
       const bytes = value * storageFactor(from, system);
       const converted = bytes / storageFactor(to, system);
       const thousand = system === "decimal" ? 1000 : 1024;
-      const familyName = system === "decimal" ? "decimal" : "binaire";
-      const goToMo = system === "decimal" ? "1 Go = 1000 Mo" : "1 Gio = 1024 Mio";
+      const familyName = system === "decimal" ? "decimal" : "binary";
+      const goToMo = system === "decimal" ? "1 GB = 1000 MB" : "1 GiB = 1024 MiB";
       const gbExplain = from.endsWith("b") || to.endsWith("b")
-        ? "On passe aussi entre bits et octets: il faut donc multiplier ou diviser par 8."
-        : "On reste dans la famille des octets, sans conversion bits/octets supplementaire.";
+        ? "You are also moving between bits and bytes, so you need to multiply or divide by 8."
+        : "You stay in the byte family, without extra bit/byte conversion.";
 
-      result.innerHTML = `<strong>${roundSmart(value)} ${from} = ${roundSmart(converted)} ${to}</strong><div class="result-note">Systeme ${familyName}, base ${thousand}.</div>`;
+      result.innerHTML = `<strong>${roundSmart(value)} ${from} = ${roundSmart(converted)} ${to}</strong><div class="result-note">${familyName} system, base ${thousand}.</div>`;
       formula.innerHTML = `
-        <h3>Pourquoi ?</h3>
-        <p>Voici la logique appliquee pour cette conversion.</p>
-        <code>${roundSmart(value)} ${from} -> octets -> ${roundSmart(converted)} ${to}</code>
+        <h3>Why?</h3>
+        <p>Here is the logic used for this conversion.</p>
+        <code>${roundSmart(value)} ${from} -> bytes -> ${roundSmart(converted)} ${to}</code>
         <ul>
-          <li><strong>Etape 1</strong>: convertir l'unite de depart en octets.</li>
-          <li><strong>Etape 2</strong>: convertir ces octets vers l'unite cible.</li>
-          <li><strong>Base</strong>: ${goToMo} dans le systeme ${familyName}.</li>
-          <li><strong>Bits vs octets</strong>: ${gbExplain}</li>
+          <li><strong>Step 1</strong>: convert the starting unit into bytes.</li>
+          <li><strong>Step 2</strong>: convert those bytes into the target unit.</li>
+          <li><strong>Base</strong>: ${goToMo} in the ${familyName} system.</li>
+          <li><strong>Bits vs bytes</strong>: ${gbExplain}</li>
         </ul>
       `;
     }
